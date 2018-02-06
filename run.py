@@ -19,4 +19,4 @@ if app.config.get('MOCK_STORAGE', False):
 app_sessions(app)
 app_register_blueprints(app)
 server.init_app(app)
-app.run(debug=True, port=8000)
+app.run(debug=True, port=8000, host='0.0.0.0')

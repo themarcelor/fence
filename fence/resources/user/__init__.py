@@ -107,3 +107,6 @@ def get_user_accesses():
             % flask.g.user.username
         )
     return user
+
+def get_user(username):
+    return current_session.query(User).filter(User.name == username).first()

@@ -38,18 +38,24 @@ def find_user(username, session):
         raise NotFound("user {} not found".format(username))
     return user
 
+def get_user(current_session, username):
+    user = current_session.query(User).filter(User.username == username).first()
+    if not user:
+        raise NotFound("user {} not found".format(username))
+    return user
+
 
 def get_info_by_username(username):
     with flask.current_app.db.session as session:
         return get_user_info(find_user(username, session), session)
-
 
 def get_current_user_info():
     with flask.current_app.db.session as session:
         return get_user_info(session.merge(flask.g.user), session)
 
 
-def get_user_info(user, session):
+def get_user_info(current_session, username):
+    user = get_user(current_session, username)
     info = {
         'user_id': user.id,
         'username': user.username,
@@ -69,7 +75,7 @@ def get_user_info(user, session):
         info['certificates_uploaded'] = [
             c.name for c in user.application.certificates_uploaded]
         info['message'] = user.application.message
-    return flask.jsonify(info)
+    return info
 
 
 def send_mail(send_from, send_to, subject, text, server, certificates=None):
@@ -108,5 +114,3 @@ def get_user_accesses():
         )
     return user
 
-def get_user(username):
-    return current_session.query(User).filter(User.name == username).first()

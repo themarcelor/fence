@@ -1,6 +1,6 @@
 from functools import wraps
 
-from authutils.errors import JWTError
+from authutils.errors import JWTError, JWTExpiredError
 import flask
 from flask_sqlalchemy_session import current_session
 
@@ -12,15 +12,15 @@ from fence.models import User, IdentityProvider
 def build_redirect_url(hostname, path):
     """
     Compute a redirect given a hostname and next path where
-    
+
     Args:
         hostname (str): may be empty string or a bare hostname or
                a hostname with a protocal attached (https?://...)
         path (int): is a path to attach to hostname
-        
+
     Return:
         string url suitable for flask.redirect
-        
+
     Side Effects:
         - None
     """
@@ -29,6 +29,7 @@ def build_redirect_url(hostname, path):
     if bool(redirect_base) and not redirect_base.startswith("http"):
         redirect_base = "https://" + redirect_base
     return redirect_base + path
+
 
 def login_user(request, username, provider):
     user = current_session.query(
@@ -151,6 +152,10 @@ def has_oauth(scope=None):
     scope.update({'openid'})
     try:
         access_token_claims = validate_jwt(aud=scope, purpose='access')
+    except JWTExpiredError as e:
+        raise Unauthorized(
+            'failed to validate token: token is expired: {}'.format(e)
+        )
     except JWTError as e:
         raise Unauthorized('failed to validate token: {}'.format(e))
     user_id = access_token_claims['sub']

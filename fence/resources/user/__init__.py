@@ -10,6 +10,7 @@ from sqlalchemy import func
 from fence.errors import NotFound, UserError, InternalError
 from fence.models import User
 
+from fence.resources import userdatamodel as udm
 
 def update_user_resource(username, resource):
     with flask.current_app.db.session as session:
@@ -56,6 +57,11 @@ def get_current_user_info():
 
 def get_user_info(current_session, username):
     user = get_user(current_session, username)
+    if user.is_admin:
+        role = 'admin'
+    else:
+        role = 'user'
+    groups = udm.get_user_groups(current_session, username)['groups']
     info = {
         'user_id': user.id,
         'username': user.username,
@@ -65,7 +71,9 @@ def get_user_info(current_session, username):
         'project_access': dict(user.project_access),
         'certificates_uploaded': [],
         'email': user.email,
-        'message': ''
+        'message': '',
+        'role': role,
+        'groups': groups
     }
     if user.tags is not None and len(user.tags) > 0:
         info['tags'] = {tag.key: tag.value for tag in user.tags}
@@ -114,3 +122,5 @@ def get_user_accesses():
         )
     return user
 
+def get_user_groups(current_session, username):
+    return udm.get_user_groups(current_session, username)

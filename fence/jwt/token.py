@@ -150,6 +150,15 @@ class UnsignedIDToken(AuthlibCodeIDToken):
         return token
 
 
+# Allowed scopes for user requested token and oauth2 client requested token
+# TODO: this should be more discoverable and configurable
+#
+# Only allow web session based auth access credentials so that user
+# can't create a long-lived API key using a short lived access_token
+SESSION_ALLOWED_SCOPES = ['openid', 'user', 'credentials', 'data', 'admin']
+USER_ALLOWED_SCOPES = ['fence', 'openid', 'user', 'data', 'admin']
+CLIENT_ALLOWED_SCOPES = ['openid', 'user', 'data', 'admin']
+
 def issued_and_expiration_times(seconds_to_expire):
     """
     Return the times in unix time that a token is being issued and will be

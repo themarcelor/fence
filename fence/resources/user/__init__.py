@@ -3,7 +3,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 import flask
-from flask_sqlalchemy_session import current_session as curr_sess
 from fence.resources import userdatamodel as udm
 import smtplib
 from sqlalchemy import func
@@ -33,6 +32,8 @@ def update_user_resource(username, resource):
                 server=flask.current_app.config['EMAIL_SERVER'])
         return get_user_info(user, session)
 
+def delete_user(current_session, username):
+    return udm.delete_user(current_session, username)
 
 def find_user(username, session):
     user = session.query(User).filter(func.lower(User.username) == username.lower()).first()
@@ -41,11 +42,10 @@ def find_user(username, session):
     return user
 
 def get_user(current_session, username):
-    user = current_session.query(User).filter(User.username == username).first()
+    user = udm.get_user(current_session, username)
     if not user:
         raise NotFound("user {} not found".format(username))
     return user
-
 
 def get_info_by_username(username):
     with flask.current_app.db.session as session:
@@ -110,12 +110,7 @@ def send_mail(send_from, send_to, subject, text, server, certificates=None):
 
 
 def get_user_accesses():
-    user = (
-        curr_sess
-        .query(User)
-        .join(User.groups)
-        .filter(User.id == flask.g.user.id)
-    )
+    user = udm.get_user_accesses()
     if not user:
         raise InternalError(
             'Error: %s user does not exist'

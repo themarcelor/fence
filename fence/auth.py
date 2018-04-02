@@ -58,16 +58,19 @@ def logout(next_url=None):
     # Call get_current_user (but ignore the result) just to check that either
     # the user is logged in or that authorization is mocked.
     user = get_current_user()
+    flask.current_app.logger.debug("IN AUTH LOGOUT, next_url = {0}".format(next_url))
     if not user:
         raise Unauthorized("You are not logged in")
-    if flask.session.get('provider') == IdentityProvider.itrust:
-        next_url = flask.current_app.config['ITRUST_GLOBAL_LOGOUT'] + next_url
+    if flask.session['provider'] == IdentityProvider.itrust:
+        itrust_next_url = flask.current_app.config['ITRUST_GLOBAL_LOGOUT'] + next_url
+        flask.current_app.logger.debug("IN AUTH LOGOUT, itrust_next_url = {0}".format(itrust_next_url))
     flask.session.clear()
     redirect_response = flask.make_response(
         flask.redirect(next_url)
     )
     clear_cookies(redirect_response)
-    return redirect_response
+    flask.current_app.logger.debug("IN AUTH LOGOUT WE RETURN, itrust or next = {0}".format((redirect_response or itrust_next_url or next_url)))
+    return (redirect_response or itrust_next_url or next_url)
 
 
 def check_scope(scope):

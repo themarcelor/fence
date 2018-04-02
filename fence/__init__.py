@@ -53,14 +53,14 @@ def app_config(app, settings='fence.settings', root_dir=None):
     if root_dir is None:
         root_dir = os.path.dirname(
                 os.path.dirname(os.path.realpath(__file__)))
-    if 'AWS_CREDENTIALS' in app.config and len(app.config['AWS_CREDENTIALS']) > 0:
-        value = app.config['AWS_CREDENTIALS'].values()[0]
+        if 'AWS_CREDENTIALS' in app.config and len(app.config['AWS_CREDENTIALS']) > 0:
+            value = app.config['AWS_CREDENTIALS'].values()[0]
         app.boto = BotoManager(value, logger=app.logger)
         app.register_blueprint(
-            fence.blueprints.data.blueprint, url_prefix='/data'
-        )
-    for kid, (public, private) in app.config['JWT_KEYPAIR_FILES'].iteritems():
-        public_filepath = os.path.join(root_dir, public)
+                fence.blueprints.data.blueprint, url_prefix='/data'
+                )
+        for kid, (public, private) in app.config['JWT_KEYPAIR_FILES'].iteritems():
+            public_filepath = os.path.join(root_dir, public)
         private_filepath = os.path.join(root_dir, private)
         with open(public_filepath, 'r') as f:
             public_key = f.read()
@@ -68,15 +68,15 @@ def app_config(app, settings='fence.settings', root_dir=None):
             private_key = f.read()
         app.keypairs.append(keys.Keypair(
             kid=kid, public_key=public_key, private_key=private_key
-        ))
-    app.jwt_public_keys = {
-        app.config['BASE_URL']: OrderedDict([
-            (str(keypair.kid), str(keypair.public_key))
-            for keypair in app.keypairs
-        ])
-    }
+            ))
+        app.jwt_public_keys = {
+                app.config['BASE_URL']: OrderedDict([
+                    (str(keypair.kid), str(keypair.public_key))
+                    for keypair in app.keypairs
+                    ])
+                }
 
-    cirrus.config.config.update(**app.config.get('CIRRUS_CFG', {}))
+        cirrus.config.config.update(**app.config.get('CIRRUS_CFG', {}))
 
 
 def app_register_blueprints(app):
@@ -100,10 +100,10 @@ def app_register_blueprints(app):
         Register the root URL.
         """
         endpoints = {
-            'oauth2 endpoint': '/oauth2',
-            'user endpoint': '/user',
-            'keypair endpoint': '/credentials'
-        }
+                'oauth2 endpoint': '/oauth2',
+                'user endpoint': '/user',
+                'keypair endpoint': '/credentials'
+                }
         return flask.jsonify(endpoints)
 
     @app.route('/logout')
@@ -131,12 +131,12 @@ def app_register_blueprints(app):
             'keys': [
                 (keypair.kid, keypair.public_key)
                 for keypair in app.keypairs
-            ]
-        })
+                ]
+            })
 
 
-def app_sessions(app):
-    app.url_map.strict_slashes = False
+        def app_sessions(app):
+            app.url_map.strict_slashes = False
     app.db = SQLAlchemyDriver(app.config['DB'])
     migrate(app.db)
     session = flask_scoped_session(app.db.Session, app)  # noqa
@@ -145,26 +145,26 @@ def app_sessions(app):
     #     logger=app.logger
     # )
     enabled_idp_ids = (
-        app.config['ENABLED_IDENTITY_PROVIDERS']['providers'].keys()
-    )
+            app.config['ENABLED_IDENTITY_PROVIDERS']['providers'].keys()
+            )
     # Add OIDC client for Google if configured.
     configured_google = (
-        'OPENID_CONNECT' in app.config
-        and 'google' in app.config['OPENID_CONNECT']
-        and 'google' in enabled_idp_ids
-    )
+            'OPENID_CONNECT' in app.config
+            and 'google' in app.config['OPENID_CONNECT']
+            and 'google' in enabled_idp_ids
+            )
     if configured_google:
         app.google_client = GoogleClient(
-            app.config['OPENID_CONNECT']['google'],
-            HTTP_PROXY=app.config.get('HTTP_PROXY'),
-            logger=app.logger
-        )
-    # Add OIDC client for multi-tenant fence if configured.
+                app.config['OPENID_CONNECT']['google'],
+                HTTP_PROXY=app.config.get('HTTP_PROXY'),
+                logger=app.logger
+                )
+        # Add OIDC client for multi-tenant fence if configured.
     configured_fence = (
-        'OPENID_CONNECT' in app.config
-        and 'fence' in app.config['OPENID_CONNECT']
-        and 'fence' in enabled_idp_ids
-    )
+            'OPENID_CONNECT' in app.config
+            and 'fence' in app.config['OPENID_CONNECT']
+            and 'fence' in enabled_idp_ids
+            )
     if configured_fence:
         app.fence_client = OAuthClient(**app.config['OPENID_CONNECT']['fence'])
     app.session_interface = UserSessionInterface()
@@ -176,6 +176,61 @@ def app_init(app, settings='fence.settings', root_dir=None):
     app_register_blueprints(app)
     server.init_app(app)
 
+def generate_csrf_token():
+    """
+    Generate a token used for CSRF protection.
+
+    If the session does not currently have such a CSRF token, assign it one
+    from a random string. Then return the session's CSRF token.
+    """
+    if '_csrf_token' not in flask.session:
+        flask.session['_csrf_token'] = random_str(20)
+    return flask.session['_csrf_token']
+
+
+@app.route('/')
+def root():
+    """
+    Register the root URL.
+    """
+    endpoints = {
+        'oauth2 endpoint': '/oauth2',
+        'user endpoint': '/user',
+        'keypair endpoint': '/credentials'
+    }
+    return flask.jsonify(endpoints)
+
+
+@app.route('/logout')
+def logout_endpoint():
+    root = app.config.get('APPLICATION_ROOT', '')
+    flask.current_app.logger.debug("IN FENCE INIT, next arg = {0}".format(flask.request.args.get('next', "EMPTY!!")))
+    next_url = build_redirect_url(app.config.get('ROOT_URL', ''), flask.request.args.get('next', root))
+    flask.current_app.logger.debug("IN FENCE INIT, next_url = {0}".format(next_url))
+    return flask.redirect(logout(next_url=next_url))
+
+
+@app.route('/jwt/keys')
+def public_keys():
+    """
+    Return the public keys which can be used to verify JWTs signed by fence.
+
+    The return value should look like this:
+
+        {
+            "keys": [
+                {
+                    "key-01": " ... [public key here] ... "
+                }
+            ]
+        }
+    """
+    return flask.jsonify({
+        'keys': [
+            (keypair.kid, keypair.public_key)
+            for keypair in app.keypairs
+        ]
+    })
 
 @app.errorhandler(Exception)
 def user_error(error):
@@ -198,7 +253,7 @@ def check_csrf():
         csrf_header = flask.request.headers.get('x-csrf-token')
         csrf_cookie = flask.request.cookies.get('csrftoken')
         referer = flask.request.headers.get('referer')
-        flask.current_app.logger.debug('HTTP REFERER ' + referer)         
+        flask.current_app.logger.debug('HTTP REFERER ' + referer)
         if not csrf_cookie\
         or not csrf_header\
         or csrf_cookie != csrf_header\

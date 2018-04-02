@@ -72,7 +72,6 @@ def logout(next_url=None):
     flask.current_app.logger.debug("IN AUTH LOGOUT WE RETURN, itrust or next = {0}".format((redirect_response or itrust_next_url or next_url)))
     return (redirect_response or itrust_next_url or next_url)
 
-
 def check_scope(scope):
     def wrapper(f):
         @wraps(f)

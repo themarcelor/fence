@@ -13,6 +13,11 @@ import json
 from fence.errors import UserError
 
 
+__all__ = ['connect_user_to_project', 'get_user_info', 'get_all_users',
+           'get_user_groups', 'create_user', 'update_user', 'add_user_to_projects',
+           'delete_user', 'add_user_to_groups', 'connect_user_to_group',
+           'remove_user_from_groups', 'disconnect_user_from_group',
+           'remove_user_from_project']
 
 
 #### USERS ####

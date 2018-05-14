@@ -7,8 +7,7 @@ All the operations return a dictionary
 ready to be converted to a json.
 """
 
-from admin_groups import *
-from admin_users import *
-from admin_providers import *
-from admin_projects import *
-from admin_token import *
+from fence.resources.admin.admin_groups import *
+from fence.resources.admin.admin_users import *
+from fence.resources.admin.admin_providers import *
+from fence.resources.admin.admin_projects import *

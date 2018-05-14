@@ -61,7 +61,8 @@ def logout(next_url=None):
     flask.current_app.logger.debug("IN AUTH LOGOUT, next_url = {0}".format(next_url))
     if not user:
         raise Unauthorized("You are not logged in")
-    if flask.session['provider'] == IdentityProvider.itrust:
+    itrust_next_url = None
+    if flask.session.get('provider') == IdentityProvider.itrust:
         itrust_next_url = flask.current_app.config['ITRUST_GLOBAL_LOGOUT'] + next_url
         flask.current_app.logger.debug("IN AUTH LOGOUT, itrust_next_url = {0}".format(itrust_next_url))
     flask.session.clear()

@@ -1,17 +1,12 @@
-from fence.resources import (
-    userdatamodel as udm,
-    project as pj,
-    group as gp,
-    user as us,
-    provider as pv
+"""
+When expanding the operations in this file,
+please use the same interface/responsibility partition
+as in projects and groups.
+"""
+
+from fence.resources.provider import (
+   get_provider, create_provider, delete_provider
 )
-
-from flask import current_app as capp
-from fence.data_model.models import User, Group
-from fence.errors import NotFound
-import json
-from fence.errors import UserError
-
 
 #### CLOUD PROVIDER ####
 

@@ -109,7 +109,11 @@ def app_register_blueprints(app):
     @app.route('/logout')
     def logout_endpoint():
         root = app.config.get('APPLICATION_ROOT', '')
-        next_url = build_redirect_url(app.config.get('ROOT_URL', ''), flask.request.args.get('next', root))
+        request_next = flask.request.args.get('next', root)
+        if request_next.startswith('https') or request_next.startswith('http'):
+            next_url = request_next
+        else:
+            next_url = build_redirect_url(app.config.get('ROOT_URL', ''), flask.request.args.get('next', root))
         return logout(next_url=next_url)
 
     @app.route('/jwt/keys')
@@ -140,10 +144,10 @@ def app_register_blueprints(app):
     app.db = SQLAlchemyDriver(app.config['DB'])
     migrate(app.db)
     session = flask_scoped_session(app.db.Session, app)  # noqa
-    # app.storage_manager = StorageManager(
-    #     app.config['STORAGE_CREDENTIALS'],
-    #     logger=app.logger
-    # )
+    app.storage_manager = StorageManager(
+        app.config['STORAGE_CREDENTIALS'],
+        logger=app.logger
+    )
     enabled_idp_ids = (
             app.config['ENABLED_IDENTITY_PROVIDERS']['providers'].keys()
             )
@@ -256,11 +260,8 @@ def check_csrf():
         csrf_header = flask.request.headers.get('x-csrf-token')
         csrf_cookie = flask.request.cookies.get('csrftoken')
         referer = flask.request.headers.get('referer')
-        flask.current_app.logger.debug('HTTP REFERER ' + referer)
-        if not csrf_cookie\
-        or not csrf_header\
-        or csrf_cookie != csrf_header\
-        or not referer:
+        flask.current_app.logger.debug('HTTP REFERER ' + referer)         
+        if not all([csrf_cookie, csrf_header, csrf_cookie == csrf_header, referer]):
             raise UserError("CSRF verification failed. Request aborted")
 
 

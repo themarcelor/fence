@@ -1,16 +1,8 @@
 from fence.resources import (
-    userdatamodel as udm,
-    project as pj,
-    group as gp,
-    user as us,
-    provider as pv
+    provider as pv,
+    userdatamodel as udm
 )
 
-from flask import current_app as capp
-from fence.models import User, Group
-from fence.errors import NotFound
-import json
-from fence.errors import UserError
 
 __all__ = ['get_provider', 'create_provider', 'delete_provider_by_name']
 

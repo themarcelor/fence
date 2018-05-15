@@ -101,7 +101,6 @@ def create_user_by_username_project(current_session, new_user, proj):
         current_session.flush()
 
     return {"user": new_user,
-            "result": "success",
             "project": project,
             "privileges": priv}
 

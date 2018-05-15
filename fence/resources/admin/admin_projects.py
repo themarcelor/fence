@@ -1,22 +1,9 @@
-from fence.resources import (
-    userdatamodel as udm,
-    project as pj,
-    group as gp,
-    user as us,
-    provider as pv
-)
-
+from fence.resources import project as pj
 from flask import current_app as capp
-from fence.models import User, Group
-from fence.errors import NotFound
-import json
-from fence.errors import UserError
 
 __all__ = ['get_project_info', 'get_all_projects', 'create_project',
            'delete_project', 'create_bucket_on_project',
            'delete_bucket_on_project', 'list_buckets_on_project']
-
-#### PROJECTS ####
 
 
 def get_project_info(current_session, project_name):

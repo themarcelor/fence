@@ -12,6 +12,12 @@ import temps
 from cdispyutils.log import get_logger
 from userdatamodel.driver import SQLAlchemyDriver
 
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning, SecurityWarning
+# Suppress urllib3 warnings
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings(SecurityWarning)
+
 from fence.models import (
     Project,
     User,
@@ -83,7 +89,10 @@ class DbGapSyncer(object):
                                username=self.sftp['username'],
                                password=self.sftp['password'],
                                cnopts=cnopts) as sftp:
-            sftp.get_r('.', path)
+            for file_name in sftp.listdir():
+                if self._match_pattern(file_name):
+                    print file_name
+                    sftp.get(file_name, os.path.join(path, file_name))
 
     @contextmanager
     def _read_file(self, filepath, encrypted=True):
@@ -265,7 +274,7 @@ class DbGapSyncer(object):
                     provider=sa.provider.name,
                     username=username,
                     project=project,
-                    access='read-storage'
+                    access=['read-storage']
                 )
 
     def _init_projects(self, s):

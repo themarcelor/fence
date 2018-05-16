@@ -11,6 +11,10 @@ from fence.errors import (
     UserError,
 )
 
+__all__ = ['clear_projects_in_group', 'clear_users_in_group', 'get_group',
+           'get_user_group_access_privilege', 'get_project_group_access_privilege',
+           'get_all_groups', 'get_group_users', 'get_group_projects',
+           'get_empty_group', 'get_user_to_group', 'get_project_to_group']
 
 def clear_projects_in_group(current_session, groupname):
     group = current_session.query(Group).filter(

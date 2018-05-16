@@ -15,6 +15,9 @@ from fence.errors import (
     UserError,
 )
 
+
+__all__ = ['create_provider', 'get_provider', 'delete_provider']
+
 def create_provider(
         current_session, provider_name,
         backend=None,

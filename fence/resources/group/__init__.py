@@ -8,9 +8,9 @@ def get_group_info(current_session, groupname):
     group = get_group(current_session, groupname)
     if not group:
         raise UserError("Error: group doesn' exist")
-    else:
-        projects = get_group_projects(current_session, groupname)
-        return {"name": group.name, "description": group.description, "projects": projects}
+
+    projects = get_group_projects(current_session, groupname)
+    return {"name": group.name, "description": group.description, "projects": projects}
 
 
 def delete_group(current_session, groupname):

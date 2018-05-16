@@ -17,7 +17,11 @@ from fence.errors import (
     UserError,
 )
 
-
+__all__ = ['get_project', 'create_project_with_dict', 'create_project',
+           'create_bucket_on_project', 'get_project_info', 'get_all_projects',
+           'delete_project', 'delete_bucket_on_project', 'list_buckets_on_project_by_name',
+           'get_cloud_providers_from_project', 'get_buckets_by_project_cloud_provider',
+           'get_user_project_access_privilege']
 
 def get_project(current_session, projectname):
     return current_session.query(Project).filter(

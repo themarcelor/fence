@@ -24,8 +24,7 @@ __all__ = ['get_project', 'create_project_with_dict', 'create_project',
            'get_user_project_access_privilege']
 
 def get_project(current_session, projectname):
-    return current_session.query(Project).filter(
-        Project.name == projectname).first()
+    return current_session.query(Project).filter_by(name=projectname).first()
 
 
 def create_project_with_dict(current_session, project_data):
@@ -136,9 +135,7 @@ def get_project_info(current_session, project_name):
 
 def get_all_projects(current_session):
     projects = current_session.query(Project).all()
-    projects_info = []
-    for project in projects:
-        projects_info.append(get_project_info(current_session, project.name))
+    projects_info = [get_project_info(current_session, project.name) for project in projects ]
     return {"projects": projects_info}
 
 def delete_project(current_session, project_name):
@@ -148,56 +145,58 @@ def delete_project(current_session, project_name):
     """
     proj = current_session.query(
         Project).filter(Project.name == project_name).first()
-    if proj:
-        buckets = current_session.query(
-            ProjectToBucket).filter(
-                ProjectToBucket.project_id == proj.id).first()
-        if not buckets:
-            storage_access = current_session.query(
-                StorageAccess).filter(
-                    StorageAccess.project_id == proj.id)
-            """
-            Find the users that only belong to this project
-            and store them to be removed
-            """
-            accesses = current_session.query(
-                AccessPrivilege).filter(
-                    AccessPrivilege.project_id == proj.id)
-            users_to_remove = []            
-            for access in accesses:
-                num = current_session.query(
-                    func.count(
-                        AccessPrivilege.project_id)).filter(
-                            AccessPrivilege.user_id == access.user_id).scalar()
-                if num == 1:
-                    for storage in storage_access:
-                        provider = current_session.query(
-                            CloudProvider).filter(
-                                CloudProvider.id == storage.provider_id).first()
-                        usr = current_session.query(
-                            User).filter(User.id == access.user_id).first()
-                        users_to_remove.append((provider,usr))
-                        current_session.delete(usr)
-                current_session.delete(access)
-            for storage in storage_access:
-                current_session.delete(storage)
-            current_session.delete(proj)
-            return {"result": "success", "users_to_remove": users_to_remove}
-        else:
-            msg = ("error, project still has buckets"
-                   " associated with it. Please remove"
-                   " those first and then retry.")
-            return {"result": msg}
-    else:
+
+    if not proj:
         return {"result": "error, project not found"}
+
+    buckets = current_session.query(
+        ProjectToBucket).filter(
+            ProjectToBucket.project_id == proj.id).first()
+
+    if buckets:
+        msg = ("error, project still has buckets"
+               " associated with it. Please remove"
+               " those first and then retry.")
+        return {"result": msg}
+
+    storage_access = current_session.query(
+        StorageAccess).filter(
+            StorageAccess.project_id == proj.id)
+    """
+    Find the users that only belong to this project
+    and store them to be removed
+    """
+    accesses = current_session.query(
+        AccessPrivilege).filter(
+            AccessPrivilege.project_id == proj.id)
+    users_to_remove = []            
+    for access in accesses:
+        num = current_session.query(
+            func.count(
+                AccessPrivilege.project_id)).filter(
+                    AccessPrivilege.user_id == access.user_id).scalar()
+        if num == 1:
+            for storage in storage_access:
+                provider = current_session.query(
+                    CloudProvider).filter(
+                        CloudProvider.id == storage.provider_id).first()
+                usr = current_session.query(
+                    User).filter(User.id == access.user_id).first()
+                users_to_remove.append((provider,usr))
+                current_session.delete(usr)
+        current_session.delete(access)
+    for storage in storage_access:
+        current_session.delete(storage)
+    current_session.delete(proj)
+    return {"result": "success", "users_to_remove": users_to_remove}
+
 
 
 def delete_bucket_on_project(current_session, project_name, bucket_name):
     """
     Remove a bucket and its relationship to a project
     """
-    bucket = current_session.query(
-        Bucket).filter(Bucket.name == bucket_name).first()
+    bucket = current_session.query(Bucket).filter_by(name=bucket_name).first()
     if not bucket:
         msg = "".join(["Bucket name ", bucket_name, " not found"])
         raise NotFound(msg)
@@ -263,12 +262,11 @@ def get_cloud_providers_from_project(current_session, project_id):
     return cloud_providers
 
 
-def get_buckets_by_project_cloud_provider(current_session, project_id, provider_id):
+def get_buckets_by_project_cloud_provider(current_session, prjct_id, provider_id):
     """
     List all the buckets assigned to a project
     """
-    buckets = current_session.query(ProjectToBucket).filter(
-        ProjectToBucket.project_id == project_id)
+    buckets = current_session.query(ProjectToBucket).filter_by(project_id=prjct_id)
     response = {"buckets": []}
     for bucket in buckets:
         buck = current_session.query(Bucket).filter(

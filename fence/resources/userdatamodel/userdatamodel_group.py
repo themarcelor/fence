@@ -37,19 +37,24 @@ def clear_users_in_group(current_session, groupname):
             current_session.flush()
 
 def get_group(current_session, groupname):
-    return current_session.query(Group).filter(
-        Group.name == groupname).first()
+    return current_session.query(Group).filter_by(name=groupname).first()
 
 
 def get_user_group_access_privilege(current_session, user, group):
-    return current_session.query(UserToGroup).filter(
-        UserToGroup.user_id == user.id).filter(
-            UserToGroup.group_id == group.id).first()
+    return (
+        current_session
+        .query(UserToGroup)
+        .filter_by(user_id=user.id, group_id=group.id)
+        .first()
+    )
 
 def get_project_group_access_privilege(current_session, project, group):
-    return current_session.query(AccessPrivilege).filter(
-        AccessPrivilege.project_id == project.id).filter(
-            AccessPrivilege.group_id == group.id).first()
+    return (
+        current_session
+        .query(AccessPrivilege)
+        .filter_by(project_id=project.id, group_id=group.id)
+        .first()
+    )
 
 
 def get_all_groups(current_session):

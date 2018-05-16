@@ -40,35 +40,36 @@ def delete_user(current_session, username):
     """
     user = current_session.query(
         User).filter(User.username == username).first()
-    if user:
-        accesses = current_session.query(
-            AccessPrivilege).filter(AccessPrivilege.user_id == user.id)
-        groups = current_session.query(
-                UserToGroup).filter(
-                    UserToGroup.user_id == user.id).all()
-        for row in groups:
-            current_session.delete(row)
-
-        cloud_providers = []
-        for row in accesses:
-            proj = current_session.query(
-                StorageAccess).filter(
-                    StorageAccess.project_id == row.project_id).first()
-            # commenting until we figure out why this is in ComputeQuota
-            """
-            cloud_providers.append(
-                current_session.query(
-                    CloudProvider).filter(
-                        CloudProvider.id == proj.provider_id).first())
-            """
-            current_session.delete(row)
-        current_session.delete(user)
-        return {"result": "success",
-                #"providers": cloud_providers, 
-                "user": user}
-    else:
+    if not user:
         msg = "".join(["user name ", username, " not found"])
         raise NotFound(msg)
+
+    accesses = current_session.query(
+        AccessPrivilege).filter(AccessPrivilege.user_id == user.id)
+    groups = current_session.query(
+            UserToGroup).filter(
+                UserToGroup.user_id == user.id).all()
+    for row in groups:
+        current_session.delete(row)
+
+    cloud_providers = []
+    for row in accesses:
+        proj = current_session.query(
+            StorageAccess).filter(
+                StorageAccess.project_id == row.project_id).first()
+        # commenting until we figure out why this is in ComputeQuota
+        """
+        cloud_providers.append(
+            current_session.query(
+                CloudProvider).filter(
+                    CloudProvider.id == proj.provider_id).first())
+        """
+        current_session.delete(row)
+    current_session.delete(user)
+    return {"result": "success",
+            #"providers": cloud_providers, 
+            "user": user}
+ 
 
 def create_user_by_username_project(current_session, new_user, proj):
     """

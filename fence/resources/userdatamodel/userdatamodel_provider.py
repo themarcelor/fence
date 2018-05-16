@@ -73,20 +73,17 @@ def delete_provider(current_session, provider_name):
     """
     provider = current_session.query(
         CloudProvider).filter(CloudProvider.name == provider_name).first()
-    if provider:
-        projects = current_session.query(
-            StorageAccess).filter(
-                StorageAccess.provider_id == provider.id).first()
-        if projects:
-            msg = "".join(
-                ["provider name ",
-                 provider_name,
-                 (" in use in projects."
-                  " Please remove these references and retry")])
-            raise UserError(msg)
-        else:
-            current_session.delete(provider)
-            return {"response": "success"}
-    else:
-        msg = "".join(["provider name ", provider_name, " not found"])
-        raise NotFound(msg)
+    if not provider:
+        msg = "provider name {}, not found"
+        raise NotFound(msg.format(provider_name))
+
+    projects = current_session.query(
+        StorageAccess).filter(
+            StorageAccess.provider_id == provider.id).first()
+    if projects:
+        msg = ("Provider name {} in use in projects."
+              " Please remove these references and retry")
+        raise UserError(msg.format(provider_name))
+
+    current_session.delete(provider)
+    return {"response": "success"}

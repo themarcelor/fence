@@ -24,7 +24,6 @@ def clear_projects_in_group(current_session, groupname):
             AccessPrivilege.group_id == group.id)
         for link in links:
             current_session.delete(link)
-            current_session.flush()
 
 def clear_users_in_group(current_session, groupname):
     group = current_session.query(Group).filter(
@@ -34,7 +33,6 @@ def clear_users_in_group(current_session, groupname):
             UserToGroup.group_id == group.id)
         for link in links:
             current_session.delete(link)
-            current_session.flush()
 
 def get_group(current_session, groupname):
     return current_session.query(Group).filter_by(name=groupname).first()

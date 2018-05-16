@@ -98,7 +98,6 @@ def create_user(current_session, username, role, email):
         email_add = email
         usr = User(username=username, active=True, is_admin=is_admin, email=email_add)
         current_session.add(usr)
-        current_session.flush()
         return us.get_user_info(current_session, username)
 
 def update_user(current_session, username, role, email, new_name):
@@ -115,7 +114,6 @@ def update_user(current_session, username, role, email, new_name):
         is_admin = usr.is_admin
     usr.is_admin = is_admin
     usr.username = new_name or usr.username
-    current_session.flush()
     return us.get_user_info(current_session, usr.username)
 
 

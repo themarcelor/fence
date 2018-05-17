@@ -236,7 +236,6 @@ def app(kid, rsa_private_key, rsa_public_key):
     mocker = Mocker()
     mocker.mock_functions()
     root_dir = os.path.dirname(os.path.realpath(__file__))
-
     app_init(fence.app, test_settings, root_dir=root_dir)
     fence.app.keypairs.append(Keypair(
         kid=kid, public_key=rsa_public_key, private_key=rsa_private_key
@@ -312,7 +311,7 @@ def awg_users(db_session):
     user_id, username = utils.create_awg_user(awg_usr, db_session)
 
 @pytest.fixture(scope='function')
-def providers(db_session):
+def providers(db_session, app):
     providers = dict(json.loads(
         utils.read_file('resources/providers.json')
     ))

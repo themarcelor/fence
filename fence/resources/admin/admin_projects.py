@@ -53,14 +53,17 @@ def create_bucket_on_project(current_session, project_name, bucket_name, provide
         bucket_name,
         provider_name
     )
+    project = pj.get_project(current_session, project_name)
     if response["result"] == "success":
         capp.storage_manager.create_bucket(
-            response["provider"].backend,
-            response["bucket"].name
+            response["provider"].name,
+            current_session,
+            response["bucket"].name,
+            project
         )
         for user_pair in response["users_to_update"]:
             capp.storage_manager.update_bucket_acl(
-                response["provider"].backend,
+                response["provider"].name,
                 response["bucket"],
                 (user_pair[0], user_pair[1])
             )

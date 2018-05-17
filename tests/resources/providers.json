@@ -10,6 +10,11 @@
 	    "name": "provider_b",
 	    "backend": "cleversafe",
 	    "service": "storage"
+	},
+	{
+	    "name": "test-cleversafe",
+	    "backend": "cleversafe",
+	    "service": "storage"
 	}
     ]
 }

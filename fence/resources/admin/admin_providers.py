@@ -4,9 +4,7 @@ from fence.resources import (
 )
 
 
-__all__ = ['get_provider', 'create_provider', 'delete_provider_by_name']
-
-#### CLOUD PROVIDER ####
+__all__ = ['get_provider', 'create_provider', 'delete_provider']
 
 
 def get_provider(current_session, provider_name):
@@ -38,11 +36,11 @@ def create_provider(
         description
     )
 
-def delete_provider_by_name(current_session, provider_name):
+def delete_provider(current_session, provider_name):
     """
     Remove a cloud provider from the database.
     All projects associated with it should be removed
     prior to calling this function.
     Returns a dictionary.
     """
-    return udm.delete_provider(current_session, provider_name)
+    return pv.delete_provider(current_session, provider_name)

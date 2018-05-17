@@ -47,7 +47,7 @@ def create_bucket_on_project(current_session, project_name, bucket_name, provide
     on the cloud provider and associate it with the project.
     Returns a dictionary.
     """
-    response = pj.create_bucket_on_project_by_name(
+    response = pj.create_bucket_on_project(
         current_session,
         project_name,
         bucket_name,

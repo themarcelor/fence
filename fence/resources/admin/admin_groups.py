@@ -18,8 +18,6 @@ __all__ = ['create_group', 'delete_group', 'update_group',
            'update_user_projects_within_group', 'remove_projects_from_group',
            'get_group_projects']
 
-#### GROUPS ####
-
 
 def create_group(current_session, groupname, description):
     """

@@ -312,6 +312,13 @@ def awg_users(db_session):
     user_id, username = utils.create_awg_user(awg_usr, db_session)
 
 @pytest.fixture(scope='function')
+def providers(db_session):
+    providers = dict(json.loads(
+        utils.read_file('resources/providers.json')
+    ))
+    utils.create_providers(providers, db_session)
+
+@pytest.fixture(scope='function')
 def awg_groups(db_session):
     awg_grps = dict(json.loads(
         utils.read_file('resources/awg_groups.json')

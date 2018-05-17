@@ -1,0 +1,15 @@
+{
+"providers":
+    [
+	{
+	    "name": "provider_a",
+	    "backend": "cleversafe",
+	    "service": "storage"
+	},
+	{
+	    "name": "provider_b",
+	    "backend": "cleversafe",
+	    "service": "storage"
+	}
+    ]
+}

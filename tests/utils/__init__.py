@@ -5,7 +5,7 @@ import uuid
 
 from flask import current_app
 
-from fence.models import User, Project, AccessPrivilege, UserToGroup, Group
+from fence.models import User, Project, AccessPrivilege, UserToGroup, Group, CloudProvider
 
 import tests
 import tests.utils.oauth2
@@ -119,6 +119,18 @@ def create_awg_user(users, db_session):
                     s.add(ap)
                     s.flush()
     return user.id, user.username
+
+def create_providers(data, db_session):
+    s = db_session
+    providers = data['providers']
+    for provider in providers:
+        prov = CloudProvider()
+        prov.name = provider['name']
+        prov.backend = provider['backend']
+        prov.service = provider['service']
+        s.add(prov)
+        s.flush
+
 
 def create_awg_groups(data, db_session):
     s = db_session

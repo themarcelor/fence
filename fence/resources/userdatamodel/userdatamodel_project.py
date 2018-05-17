@@ -57,6 +57,7 @@ def create_project(
     """
     new_project = Project(name=name, auth_id=auth_id)
     current_session.add(new_project)
+    current_session.flush()
     for storage in storage_accesses:
         provider = current_session.query(
             CloudProvider).filter(CloudProvider.name == storage).first()
@@ -89,6 +90,7 @@ def create_bucket_on_project(
     if not bucket:
         bucket = Bucket(name=bucket_name, provider_id=provider.id)
         current_session.add(bucket)
+        current_session.flush()
         proj_to_bucket = ProjectToBucket(
             project_id=project.id, bucket_id=bucket.id, privilege=['owner'])
         current_session.add(proj_to_bucket)

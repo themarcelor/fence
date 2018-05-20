@@ -77,20 +77,20 @@ def delete_bucket_on_project(current_session, project_name, bucket_name):
     and on the storage associated with that bucket.
     Returns a dictionary.
     """
-    response = pj.delete_bucket_on_project_by_name(
+    response = pj.delete_bucket_on_project(
         current_session,
         project_name,
         bucket_name
     )
     if response["result"] == "success":
         capp.storage_manager.delete_bucket(
-            response["provider"].backend,
+            response["provider"].name,
             bucket_name
         )
         return {"result": "success"}
     else:
         capp.storage_manager.delete_bucket(
-            response["provider"].backend,
+            response["provider"].name,
             bucket_name
         )
         return {"result": response["result"]}

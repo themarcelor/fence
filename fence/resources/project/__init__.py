@@ -1,26 +1,15 @@
-import fence.resources.userdatamodel as udm
-
-def get_project(current_session, project_name):
-    return udm.get_project(current_session, project_name)
-
-def get_all_projects(current_session):
-    return udm.get_all_projects(current_session)
-
-def get_project_info(current_session, project_name):
-    return udm.get_project_info(current_session, project_name)
-
-def create_project(current_session, projectname, authid, storageaccesses):
-    return udm.create_project(current_session, projectname, authid, storageaccesses)
-
-def delete_project(current_session, project_name):
-    return udm.delete_project(current_session, project_name)
-
-def create_bucket_on_project(current_session, project_name, bucket_name, provider_name):
-    return udm.create_bucket_on_project(current_session,
-                                                project_name, bucket_name, provider_name)
-
-def delete_bucket_on_project(current_session, project_name, bucket_name):
-    return udm.delete_bucket_on_project(current_session, project_name, bucket_name)
-
-def list_buckets_on_project(current_session, project_name):
-    return udm.list_buckets_on_project(current_session, project_name)
+"""
+This module is supposed to hold
+operations for projects.
+Its main responsibility is transforming the
+Project object borne information into a dictionary
+that shield the rest of the modules from the particular
+implementation of this object.
+Please replace the direct imports with a whole function
+that holds this logic
+"""
+from fence.resources.userdatamodel import (
+get_project, get_all_projects, get_project_info, create_project,
+delete_project, create_bucket_on_project, delete_bucket_on_project,
+list_buckets_on_project
+)

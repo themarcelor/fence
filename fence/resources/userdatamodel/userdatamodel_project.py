@@ -19,7 +19,7 @@ from fence.errors import (
 
 __all__ = ['get_project', 'create_project_with_dict', 'create_project',
            'create_bucket_on_project', 'get_project_info', 'get_all_projects',
-           'delete_project', 'delete_bucket_on_project', 'list_buckets_on_project_by_name',
+           'delete_project', 'delete_bucket_on_project', 'list_buckets_on_project',
            'get_cloud_providers_from_project', 'get_buckets_by_project_cloud_provider',
            'get_user_project_access_privilege']
 
@@ -94,7 +94,7 @@ def create_bucket_on_project(
         proj_to_bucket = ProjectToBucket(
             project_id=project.id, bucket_id=bucket.id, privilege=['owner'])
         current_session.add(proj_to_bucket)
-        # Find the users that need to be deleted
+        # Find the users that need to be updated
         users_in_project = current_session.query(AccessPrivilege).filter(
             AccessPrivilege.project_id == project.id)
         users_to_update = []
@@ -222,7 +222,7 @@ def delete_bucket_on_project(current_session, project_name, bucket_name):
                "relationship not found, deleting bucket anyway")
         return  {"result": msg, "provider": provider}
 
-def list_buckets_on_project_by_name(current_session, project_name):
+def list_buckets_on_project(current_session, project_name):
     """
     List all the buckets assigned to a project
     """

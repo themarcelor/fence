@@ -90,7 +90,9 @@ def update_group_users_projects(current_session, group, project, users):
     return {"success": "users {0} connected to project {1}".format(
         [user.username for user in users], project)}
 
-def add_projects_to_group(current_session, groupname, projects=[]):
+def add_projects_to_group(current_session, groupname, projects=None):
+    if not projects:
+        projects = []
     grp = gp.get_group(current_session, groupname)
     usrs = gp.get_group_users(current_session, groupname)
     if not grp:
@@ -142,7 +144,9 @@ def update_user_projects_within_group(current_session, username, groupname, proj
             # somehow the user was not linked to that project
             pass
 
-def remove_projects_from_group(current_session, groupname, projects=[]):
+def remove_projects_from_group(current_session, groupname, projects=None):
+    if not projects:
+        projects = []
     grp = gp.get_group(current_session, groupname)
     usrs = get_group_users(current_session, groupname)
     users_names = [x['name'] for x in usrs['users']]

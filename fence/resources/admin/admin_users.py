@@ -117,7 +117,9 @@ def update_user(current_session, username, role, email, new_name):
     return us.get_user_info(current_session, usr.username)
 
 
-def add_user_to_projects(current_session, username, projects=[]):
+def add_user_to_projects(current_session, username, projects=None):
+    if not projects:
+        projects = []
     usr = us.get_user(current_session, username)
     responses = []
     for proj in projects:
@@ -144,7 +146,9 @@ def delete_user(current_session, username):
         return {"result": "success"}
 
 
-def add_user_to_groups(current_session, username, groups=[]):
+def add_user_to_groups(current_session, username, groups=None):
+    if not groups:
+        groups = []
     usr = us.get_user(current_session, username)
     responses = []
     for groupname in groups:

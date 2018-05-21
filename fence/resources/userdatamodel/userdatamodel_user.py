@@ -15,7 +15,6 @@ from fence.errors import (
     UserError,
 )
 
-from flask_sqlalchemy_session import current_session as curr_sess
 
 __all__ = ['get_user', 'get_user_accesses', 'delete_user',
            'create_user_by_username_project', 'get_all_users', 'get_user_groups']

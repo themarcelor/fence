@@ -1,8 +1,10 @@
 from fence.resources import userdatamodel as udm
 from fence.errors import UserError, NotFound
 
+
 def get_group(current_session, groupname):
     return udm.get_group(current_session, groupname)
+
 
 def get_group_info(current_session, groupname):
     group = get_group(current_session, groupname)
@@ -20,6 +22,7 @@ def delete_group(current_session, groupname):
     else:
         current_session.delete(group)
 
+
 def create_group(current_session, groupname, description):
     group = udm.get_group(current_session, groupname)
     if group:
@@ -36,6 +39,7 @@ def update_group(current_session, groupname, description, new_name):
     group.description = description or group.description
     group.name = new_name or group.name
     
+
 def connect_user_to_group(current_session, user, group):
     new_link = udm.get_user_to_group()
     new_link.user_id = user.id
@@ -44,6 +48,7 @@ def connect_user_to_group(current_session, user, group):
     return {"result": ("User: {0} SUCCESFULLY "
                        "connected to Group: {1}".format(
                            user.username, group.name))}
+
 
 def connect_project_to_group(current_session, group, project):
     new_link = udm.get_project_to_group()
@@ -66,16 +71,21 @@ def remove_user_from_group(current_session, user, group):
         raise NotFound("User {0} and Group {1} are not linked".format(
             user.username, group.name))
 
+
 def remove_project_from_group(current_session, group, project):
     to_be_removed = udm.get_project_group_access_privilege(current_session, project, group)
     if to_be_removed:
         current_session.delete(to_be_removed)
-        return {"result": ("Project: {0} SUCCESFULLY "
-                       "removed from Group: {1}".format(
-                           project.name, group.name))}
+        msg = (
+            'Project: {0} SUCCESFULLY removed from Group: {1}'
+            .format(project.name, group.name)
+        )
+        return {"result": msg}
     else:
-        raise NotFound("Project {0} and Group {1} are not linked".format(
-            project.name, group.name))
+        raise NotFound(
+            'Project {0} and Group {1} are not linked'
+            .format(project.name, group.name)
+        )
 
 
 def get_group_users(current_session, groupname):

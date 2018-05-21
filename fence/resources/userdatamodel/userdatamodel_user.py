@@ -1,3 +1,7 @@
+from fence.errors import (
+    NotFound,
+    UserError,
+)
 from fence.models import (
     Project,
     StorageAccess,
@@ -10,14 +14,11 @@ from fence.models import (
     UserToGroup,
 )
 
-from fence.errors import (
-    NotFound,
-    UserError,
-)
 
-
-__all__ = ['get_user', 'get_user_accesses', 'delete_user',
-           'create_user_by_username_project', 'get_all_users', 'get_user_groups']
+__all__ = [
+    'get_user', 'get_user_accesses', 'delete_user',
+    'create_user_by_username_project', 'get_all_users', 'get_user_groups'
+]
 
 
 def get_user(current_session, username):
@@ -30,7 +31,6 @@ def get_user_accesses(current_session):
         .join(User.groups)
         .filter(User.id == flask.g.user.id)
     )
-    
 
 
 def delete_user(current_session, username):

@@ -9,12 +9,13 @@ from fence.resources import (
 from flask import current_app as capp
 
 
-
-__all__ = ['connect_user_to_project', 'get_user_info', 'get_all_users',
-           'get_user_groups', 'create_user', 'update_user', 'add_user_to_projects',
-           'delete_user', 'add_user_to_groups', 'connect_user_to_group',
-           'remove_user_from_groups', 'disconnect_user_from_group',
-           'remove_user_from_project']
+__all__ = [
+    'connect_user_to_project', 'get_user_info', 'get_all_users',
+    'get_user_groups', 'create_user', 'update_user', 'add_user_to_projects',
+    'delete_user', 'add_user_to_groups', 'connect_user_to_group',
+    'remove_user_from_groups', 'disconnect_user_from_group',
+    'remove_user_from_project'
+]
 
 
 def connect_user_to_project(current_session, usr, project=None):
@@ -52,6 +53,7 @@ def connect_user_to_project(current_session, usr, project=None):
                     msg.format(proj.name, bucket["name"]))
     return response
 
+
 def get_user_info(current_session, username):
     return us.get_user_info(current_session, username)
 
@@ -77,6 +79,7 @@ def get_user_groups(current_session, username):
         user_groups_info.append(gp.get_group_info(current_session, group))
     return {"groups": user_groups_info}
 
+
 def create_user(current_session, username, role, email):
     """
     Create a user for all the projects or groups in the list.
@@ -99,6 +102,7 @@ def create_user(current_session, username, role, email):
         usr = User(username=username, active=True, is_admin=is_admin, email=email_add)
         current_session.add(usr)
         return us.get_user_info(current_session, username)
+
 
 def update_user(current_session, username, role, email, new_name):
     usr = us.get_user(current_session, username)
@@ -130,6 +134,7 @@ def add_user_to_projects(current_session, username, projects=None):
             current_session.rollback()
             raise e
     return {"result": responses}
+
 
 def delete_user(current_session, username):
     """
@@ -211,8 +216,12 @@ def disconnect_user_from_group(current_session, usr, groupname):
 
     response = gp.remove_user_from_group(current_session, usr, grp)
     projects = gp.get_group_projects(current_session, groupname)
-    projects_data = [ pj.get_project(current_session, project).auth_id for project in projects]
+    projects_data = [
+        pj.get_project(current_session, project).auth_id
+        for project in projects
+    ]
     return response
+
 
 def remove_user_from_project(current_session, usr, project_name):
     proj = pj.get_project(current_session, project_name)

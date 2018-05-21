@@ -1,3 +1,7 @@
+from fence.errors import (
+    NotFound,
+    UserError,
+)
 from fence.models import (
     Project,
     StorageAccess,
@@ -10,13 +14,9 @@ from fence.models import (
     UserToGroup,
 )
 
-from fence.errors import (
-    NotFound,
-    UserError,
-)
-
 
 __all__ = ['create_provider', 'get_provider', 'delete_provider']
+
 
 def create_provider(
         current_session, provider_name,
@@ -47,7 +47,6 @@ def create_provider(
     return msg
 
 
-
 def get_provider(current_session, provider_name):
     """
     Get the provider info from the userdatamodel
@@ -65,6 +64,7 @@ def get_provider(current_session, provider_name):
         'service': provider.service
     }
     return info
+
 
 def delete_provider(current_session, provider_name):
     """

@@ -1,5 +1,9 @@
 from sqlalchemy import func
 
+from fence.errors import (
+    NotFound,
+    UserError,
+)
 from fence.models import (
     Project,
     StorageAccess,
@@ -12,16 +16,15 @@ from fence.models import (
     UserToGroup,
 )
 
-from fence.errors import (
-    NotFound,
-    UserError,
-)
+__all__ = [
+    'get_project', 'create_project_with_dict', 'create_project',
+    'create_bucket_on_project', 'get_project_info', 'get_all_projects',
+    'delete_project', 'delete_bucket_on_project', 'list_buckets_on_project',
+    'get_cloud_providers_from_project',
+    'get_buckets_by_project_cloud_provider',
+    'get_user_project_access_privilege'
+]
 
-__all__ = ['get_project', 'create_project_with_dict', 'create_project',
-           'create_bucket_on_project', 'get_project_info', 'get_all_projects',
-           'delete_project', 'delete_bucket_on_project', 'list_buckets_on_project',
-           'get_cloud_providers_from_project', 'get_buckets_by_project_cloud_provider',
-           'get_user_project_access_privilege']
 
 def get_project(current_session, projectname):
     return current_session.query(Project).filter_by(name=projectname).first()
@@ -68,6 +71,7 @@ def create_project(
         else:
             raise NotFound()
     return new_project
+
 
 def create_bucket_on_project(
         current_session, project_name, bucket_name, provider_name):
@@ -138,6 +142,7 @@ def get_all_projects(current_session):
     projects_info = [get_project_info(current_session, project.name) for project in projects ]
     return {"projects": projects_info}
 
+
 def delete_project(current_session, project_name):
     """
     Delete the project from the database
@@ -147,17 +152,18 @@ def delete_project(current_session, project_name):
         Project).filter(Project.name == project_name).first()
 
     if not proj:
-        return {"result": "error, project not found"}
+        return {'result': 'error, project not found'}
 
     buckets = current_session.query(
         ProjectToBucket).filter(
             ProjectToBucket.project_id == proj.id).first()
 
     if buckets:
-        msg = ("error, project still has buckets"
-               " associated with it. Please remove"
-               " those first and then retry.")
-        return {"result": msg}
+        msg = (
+            'error, project still has buckets associated with it. Please'
+            ' remove those first and then retry.'
+        )
+        return {'result': msg}
 
     storage_access = current_session.query(
         StorageAccess).filter(
@@ -191,7 +197,6 @@ def delete_project(current_session, project_name):
     return {"result": "success", "users_to_remove": users_to_remove}
 
 
-
 def delete_bucket_on_project(current_session, project_name, bucket_name):
     """
     Remove a bucket and its relationship to a project
@@ -222,6 +227,7 @@ def delete_bucket_on_project(current_session, project_name, bucket_name):
                "relationship not found, deleting bucket anyway")
         return  {"result": msg, "provider": provider}
 
+
 def list_buckets_on_project(current_session, project_name):
     """
     List all the buckets assigned to a project
@@ -246,10 +252,11 @@ def list_buckets_on_project(current_session, project_name):
         response['buckets'].append(new_buck)
     return response
 
+
 def get_cloud_providers_from_project(current_session, project_id):
     """
-    Retrieve cloud provider to be used in other
-    operations that require the backend
+    Retrieve cloud provider to be used in other operations that require the
+    backend.
     """
     accesses = current_session.query(StorageAccess).filter(
         StorageAccess.project_id == project_id)

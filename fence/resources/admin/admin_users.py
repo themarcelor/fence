@@ -169,7 +169,7 @@ def add_user_to_groups(current_session, username, groups=None):
 def connect_user_to_group(current_session, usr, groupname=None):
     grp = gp.get_group(current_session, groupname)
     if not grp:
-        raise UserError(("Group {0} doesn't exist".format(group)))
+        raise UserError(("Group {0} doesn't exist".format(groupname)))
     else:
         responses = []
         responses.append(gp.connect_user_to_group(current_session, usr, grp))

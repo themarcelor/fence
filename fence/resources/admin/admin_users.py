@@ -90,7 +90,6 @@ def create_user(current_session, username, role, email):
         usr = us.get_user(current_session, username)
         raise UserError(("Error: user already exist. If this is not a"
                " mistake, please, retry using update"))
-        return msg
     except NotFound:
         user_list = [user['name'].upper() for user in get_all_users(current_session)['users']]
         if username.upper() in user_list:
@@ -212,7 +211,7 @@ def remove_user_from_groups(current_session, username, groups=None):
 def disconnect_user_from_group(current_session, usr, groupname):
     grp = gp.get_group(current_session, groupname)
     if not grp:
-        return {"warning": ("Group {0} doesn't exist".format(group))}
+        return {"warning": ("Group {0} doesn't exist".format(groupname))}
 
     response = gp.remove_user_from_group(current_session, usr, grp)
     projects = gp.get_group_projects(current_session, groupname)

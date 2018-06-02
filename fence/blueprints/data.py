@@ -86,6 +86,8 @@ class IndexedFile(object):
         self.index_document = self._get_index_document()
         self.metadata = self.index_document.get('metadata', {})
         self.set_acls = self._get_acls()
+        flask.current_app.logger.error('Set acls')
+        flask.current_app.logger.error(self.set_acls)
         self.indexed_file_locations = (
             self._get_indexed_file_locations(
                 self.index_document.get('urls', []))
@@ -187,12 +189,16 @@ class IndexedFile(object):
 
     @login_required({'data'})
     def check_authorization(self, action):
+        flask.current_app.logger.error('In check_authorization, set acls')
+        flask.current_app.logger.error(self.set_acls)
         if flask.g.token is None:
             given_acls = set(filter_auth_ids(
                 action, flask.g.user.project_access))
         else:
             given_acls = set(filter_auth_ids(
                 action, flask.g.token['context']['user']['projects']))
+        flask.current_app.logger.error('Given acls')
+        flask.current_app.logger.error(given_acls)
         return len(self.set_acls & given_acls) > 0
 
 

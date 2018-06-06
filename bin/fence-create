@@ -47,8 +47,8 @@ def parse_arguments():
         help='user(can represent an organization) that owns the client',
         required=True)
     client_create.add_argument(
-        '--external',
-        help='is this an external oidc client',
+        '--internal',
+        help='is this an internal oidc client',
         action="store_true", default=False
     )
 
@@ -172,7 +172,7 @@ def main():
     elif args.action == 'client-create':
         create_client_action(
             DB, username=args.username, client=args.client,
-            urls=args.urls, auto_approve=(not args.external)
+            urls=args.urls, auto_approve=args.internal
         )
     elif args.action == 'client-delete':
         delete_client_action(DB, args.client)

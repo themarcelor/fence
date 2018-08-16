@@ -1,7 +1,7 @@
 import flask
 from flask_sqlalchemy_session import current_session
 
-from fence.auth import login_required, current_token
+from fence.auth import require_auth, current_token
 from fence.errors import Unauthorized, UserError, NotFound
 from fence.models import (
     Application,
@@ -19,7 +19,7 @@ blueprint = flask.Blueprint('user', __name__)
 
 
 @blueprint.route('/', methods=['GET', 'POST'])
-@login_required({'user'})
+@require_auth(aud={'user'})
 def user_info():
     client_id = None
     if current_token and current_token['azp']:
@@ -30,7 +30,7 @@ def user_info():
 
 
 @blueprint.route('/anyaccess', methods=['GET'])
-@login_required({'user'})
+@require_auth(aud={'user'})
 def any_access():
     """
     Check if the user is in our database
@@ -42,11 +42,7 @@ def any_access():
     """
     project = flask.request.args.get('project')
     projects = None
-    if flask.g.token is None:
-        flask.g.user = current_session.merge(flask.g.user)
-        projects = flask.g.user.project_access
-    else:
-        projects = flask.g.token['context']['user']['projects']
+    projects = current_token['context']['user']['projects']
 
     success = False
 
@@ -59,13 +55,13 @@ def any_access():
 
     if success:
         resp = flask.make_response(flask.jsonify({'result': 'success'}), 200)
-        resp.headers['REMOTE_USER'] = flask.g.user.username
+        resp.headers['REMOTE_USER'] = current_token['context']['user']['name']
         return resp
     raise Unauthorized("Please login")
 
 
 @blueprint.route('/cert', methods=['GET'])
-@login_required({'user'})
+@require_auth(aud={'user'})
 def missing_certificate():
     flask.g.user = current_session.merge(flask.g.user)
     if not flask.g.user.application:
@@ -77,7 +73,7 @@ def missing_certificate():
 
 
 @blueprint.route('/cert/<certificate>', methods=['PUT'])
-@login_required({'user'})
+@require_auth(aud={'user'})
 def upload_certificate(certificate):
     extension = flask.request.args.get('extension')
     allowed_extension = ['pdf', 'png', 'jpg', 'jpeg', 'txt']
@@ -125,7 +121,7 @@ def upload_certificate(certificate):
 
 
 @blueprint.route('/cert/<certificate>', methods=['GET'])
-@login_required({'user'})
+@require_auth(aud={'user'})
 def download_certificate(certificate):
     if not flask.g.user.application:
         flask.g.user.application = Application()

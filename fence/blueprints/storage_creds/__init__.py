@@ -1,7 +1,7 @@
 import flask
 from flask_sqlalchemy_session import current_session
 
-from fence.auth import require_auth_header
+from fence.auth import require_auth
 from fence.blueprints.storage_creds.api import AccessKey, ApiKey, ApiKeyList
 from fence.blueprints.storage_creds.google import GoogleCredentialsList
 from fence.blueprints.storage_creds.google import GoogleCredentials
@@ -51,7 +51,7 @@ def make_creds_blueprint():
     )
 
     @blueprint.route('/', methods=['GET'])
-    @require_auth_header({'credentials'})
+    @require_auth(aud={'credentials'})
     def list_sources():
         """
         List different resources user can have credentials

@@ -6,7 +6,7 @@ from flask_sqlalchemy_session import current_session
 from cirrus import GoogleCloudManager
 from cirrus.config import config as cirrus_config
 
-from fence.auth import require_auth_header
+from fence.auth import require_auth
 from fence.auth import current_token
 from fence.models import GoogleServiceAccountKey
 from fence.resources.google.utils import (
@@ -23,7 +23,7 @@ class GoogleCredentialsList(Resource):
     For ``/credentials/google`` endpoint.
     """
 
-    @require_auth_header({'google_credentials'})
+    @require_auth(aud={'google_credentials'})
     def get(self):
         """
         List access keys for user
@@ -77,7 +77,7 @@ class GoogleCredentialsList(Resource):
 
         return flask.jsonify(result)
 
-    @require_auth_header({'google_credentials'})
+    @require_auth(aud={'google_credentials'})
     def post(self):
         """
         Generate a keypair for user
@@ -150,7 +150,7 @@ class GoogleCredentialsList(Resource):
 
 class GoogleCredentials(Resource):
 
-    @require_auth_header({'google_credentials'})
+    @require_auth(aud={'google_credentials'})
     def delete(self, access_key):
         """
         .. http:get: /google/(string: access_key)

@@ -6,23 +6,26 @@ import time
 from urlparse import urlparse
 
 import cirrus
-from fence.auth import login_required
+from fence.auth import require_auth
 from fence.auth import set_current_token
 from fence.auth import validate_request
 from fence.auth import current_token
 from cdispyutils.hmac4 import generate_aws_presigned_url
 from cdispyutils.config import get_value
 
+from fence.auth import current_token
 from fence.resources.google.utils import (
     get_or_create_primary_service_account_key,
     create_primary_service_account_key,
     get_or_create_proxy_group_id
 )
-from fence.errors import UnavailableError
-from fence.errors import NotFound
-from fence.errors import Unauthorized
-from fence.errors import NotSupported
-from fence.errors import InternalError
+from fence.errors import (
+    InternalError,
+    NotFound,
+    NotSupported,
+    Unauthorized,
+    UnavailableError,
+)
 
 ACTION_DICT = {
     's3': {
@@ -186,14 +189,15 @@ class IndexedFile(object):
             indexed_file_locations.append(new_location)
         return indexed_file_locations
 
-    @login_required({'data'})
+    @require_auth(aud={'data'})
     def check_authorization(self, action):
-        if flask.g.token is None:
+        if not current_token:
             given_acls = set(filter_auth_ids(
                 action, flask.g.user.project_access))
         else:
             given_acls = set(filter_auth_ids(
-                action, flask.g.token['context']['user']['projects']))
+                action, current_token['context']['user']['projects']
+            ))
         return len(self.set_acls & given_acls) > 0
 
 

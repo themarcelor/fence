@@ -3,7 +3,7 @@ import json
 import flask
 from flask_restful import Resource
 
-from fence.auth import require_auth_header
+from fence.auth import require_auth
 from fence.auth import current_token
 from fence.jwt.blacklist import blacklist_token
 from fence.jwt.token import USER_ALLOWED_SCOPES
@@ -20,7 +20,7 @@ class ApiKeyList(Resource):
     For ``/credentials/api`` endpoint.
     """
 
-    @require_auth_header({'credentials'})
+    @require_auth(aud={'credentials'})
     def get(self):
         """
         List access keys for user
@@ -61,7 +61,7 @@ class ApiKeyList(Resource):
 
         return flask.jsonify(result)
 
-    @require_auth_header({'credentials'})
+    @require_auth(aud={'credentials'})
     def post(self):
         """
         Generate a key for user
@@ -115,7 +115,7 @@ class ApiKeyList(Resource):
 
 class ApiKey(Resource):
 
-    @require_auth_header({'credentials'})
+    @require_auth(aud={'credentials'})
     def delete(self, access_key):
         """
         Delete a key for user

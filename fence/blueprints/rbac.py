@@ -3,13 +3,13 @@ Provide an interface in front of the engine for role-based access control
 (RBAC).
 
 TODO (rudyardrichter):
-instead of ``login_required``, these routes should check with arborist to see
+instead of ``require_auth``, these routes should check with arborist to see
 if the user has roles allowing them to use these endpoints.
 """
 
 import flask
 
-from fence.auth import login_required
+from fence.auth import require_auth
 from fence.errors import NotFound, UserError
 from fence.models import Policy, User
 
@@ -18,7 +18,7 @@ blueprint = flask.Blueprint('rbac', __name__)
 
 
 @blueprint.route('/policies/', methods=['GET'])
-@login_required({'admin'})
+@require_auth(aud={'admin'})
 def list_policies():
     """
     List all the existing policies. (In fence, not arborist.)
@@ -38,7 +38,7 @@ def list_policies():
 
 
 @blueprint.route('/policies/', methods=['POST'])
-@login_required({'admin'})
+@require_auth(aud={'admin'})
 def create_policy():
     """
     Create new policies in the fence database, *without* granting it to any
@@ -59,7 +59,7 @@ def create_policy():
 
 
 @blueprint.route('/policies/<policy_id>', methods=['DELETE'])
-@login_required({'admin'})
+@require_auth(aud={'admin'})
 def delete_policy(policy_id):
     """
     Delete a policy from the database.
@@ -80,7 +80,7 @@ def delete_policy(policy_id):
 
 
 @blueprint.route('/user/<user_id>/policies/', methods=['GET'])
-@login_required({'admin'})
+@require_auth(aud={'admin'})
 def list_user_policies(user_id):
     """
     List the policies that this user has access to.
@@ -92,7 +92,7 @@ def list_user_policies(user_id):
 
 
 @blueprint.route('/user/<user_id>/policies/', methods=['POST'])
-@login_required({'admin'})
+@require_auth(aud={'admin'})
 def grant_policy_to_user(user_id):
     """
     Grant additional policies to a user.
@@ -111,7 +111,7 @@ def grant_policy_to_user(user_id):
 
 
 @blueprint.route('/user/<user_id>/policies/', methods=['PUT'])
-@login_required({'admin'})
+@require_auth(aud={'admin'})
 def replace_user_policies(user_id):
     """
     Overwrite the user's existing policies and replace them with the ones
@@ -131,7 +131,7 @@ def replace_user_policies(user_id):
 
 
 @blueprint.route('/user/<user_id>/policies/', methods=['DELETE'])
-@login_required({'admin'})
+@require_auth(aud={'admin'})
 def revoke_user_policies(user_id):
     """
     Revoke all the policies which this user has access to.
@@ -147,7 +147,7 @@ def revoke_user_policies(user_id):
 
 
 @blueprint.route('/user/<user_id>/policies/<policy_id>', methods=['DELETE'])
-@login_required({'admin'})
+@require_auth(aud={'admin'})
 def revoke_user_policy(user_id, policy_id):
     """
     Revoke a specific policy (the policy ID in the path) granted to a user

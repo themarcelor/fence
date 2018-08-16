@@ -2,13 +2,13 @@ import json
 import os
 from urllib import unquote
 
-import flask
-from flask_restful import Resource
-
 from cirrus import GoogleCloudManager
 from cirrus.google_cloud.errors import GoogleAPIError
+import flask
+from flask_restful import Resource
+from flask_sqlalchemy_session import current_session
 
-from fence.auth import current_token, require_auth_header
+from fence.auth import current_token, require_auth
 from fence.restful import RestfulApi
 from fence.errors import UserError, NotFound
 from fence.resources.google.validity import GoogleProjectValidity
@@ -34,7 +34,6 @@ from fence.resources.google.utils import (
     get_project_access_from_service_accounts
 )
 from fence.models import UserServiceAccount
-from flask_sqlalchemy_session import current_session
 
 
 def make_google_blueprint():
@@ -59,7 +58,7 @@ def make_google_blueprint():
 
 class GoogleServiceAccountRoot(Resource):
 
-    @require_auth_header({'google_service_account'})
+    @require_auth(aud={'google_service_account'})
     def post(self):
         """
         Register a new service account
@@ -77,7 +76,7 @@ class GoogleServiceAccountRoot(Resource):
             user_id=user_id
         )
 
-    @require_auth_header({'google_service_account'})
+    @require_auth(aud={'google_service_account'})
     def get(self):
         google_projects = flask.request.args.get('google_project_ids')
 
@@ -280,7 +279,7 @@ class GoogleServiceAccountRoot(Resource):
 
 class GoogleServiceAccount(Resource):
 
-    @require_auth_header({'google_service_account'})
+    @require_auth(aud={'google_service_account'})
     def get(self, id_):
         """
         Get registered service account(s) and their access expiration.
@@ -300,7 +299,7 @@ class GoogleServiceAccount(Resource):
             400
         )
 
-    @require_auth_header({'google_service_account'})
+    @require_auth(aud={'google_service_account'})
     def post(self, id_):
         """
         Dry run for registering a new service account
@@ -342,7 +341,7 @@ class GoogleServiceAccount(Resource):
 
         return error_response, status
 
-    @require_auth_header({'google_service_account'})
+    @require_auth(aud={'google_service_account'})
     def patch(self, id_):
         """
         Update a service account
@@ -397,7 +396,7 @@ class GoogleServiceAccount(Resource):
 
         return '', 204
 
-    @require_auth_header({'google_service_account'})
+    @require_auth(aud={'google_service_account'})
     def delete(self, id_):
         """
         Delete a service account

@@ -4,7 +4,7 @@ from cdislogging import get_logger
 
 logger = get_logger(__name__)
 # default settings if local_settings is not present
-BASE_URL = 'http://localhost/user'
+BASE_URL = 'http://dev.localhost/user'
 APP_NAME = 'Gen3 Data Commons'
 
 SESSION_COOKIE_SECURE = True

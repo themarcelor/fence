@@ -2,9 +2,7 @@ from authutils.token.validate import validate_jwt
 import flask
 from flask_restful import Resource
 
-from fence.auth import login_user
 from fence.errors import Unauthorized
-from fence.models import IdentityProvider
 
 
 class FenceRedirect(Resource):
@@ -63,9 +61,9 @@ class FenceLogin(Resource):
             tokens['id_token'], aud={'openid'}, purpose='id',
             attempt_refresh=True
         )
-        username = id_token_claims['context']['user']['name']
-        login_user(flask.request, username, IdentityProvider.fence)
 
         if 'redirect' in flask.session:
             return flask.redirect(flask.session.get('redirect'))
+
+        username = id_token_claims['context']['user']['name']
         return flask.jsonify({'username': username})

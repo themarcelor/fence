@@ -13,7 +13,7 @@ from fence.errors import UserError
 from fence.models import UserGoogleAccount
 from fence.models import UserGoogleAccountToProxyGroup
 from fence.auth import current_token
-from fence.auth import require_auth_header
+from fence.auth import require_auth
 
 from fence.resources.google.utils import (
     get_or_create_proxy_group_id,
@@ -50,7 +50,7 @@ class GoogleLinkRedirect(Resource):
     will have access to the same resources the user does.
     """
 
-    @require_auth_header({'user'})
+    @require_auth(aud={'user'})
     def get(self):
         """
         Link a user's Google Account by running the oauth2 flow with
@@ -68,7 +68,7 @@ class GoogleLinkRedirect(Resource):
         """
         return GoogleLinkRedirect._link_google_account()
 
-    @require_auth_header({'user'})
+    @require_auth(aud={'user'})
     def patch(self):
         """
         Extend access of the user's linked Google account.
@@ -77,7 +77,7 @@ class GoogleLinkRedirect(Resource):
         """
         return GoogleLinkRedirect._extend_account_expiration()
 
-    @require_auth_header({'user'})
+    @require_auth(aud={'user'})
     def delete(self):
         """
         Permanently remove a user's linked Google account. This will first

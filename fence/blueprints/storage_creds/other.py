@@ -1,7 +1,7 @@
 import flask
 from flask_restful import Resource
 
-from fence.auth import require_auth_header
+from fence.auth import require_auth
 from fence.auth import current_token
 from userdatamodel.models import User
 
@@ -11,7 +11,7 @@ class OtherCredentialsList(Resource):
     For ``/credentials/<provider>`` endpoint.
     """
 
-    @require_auth_header({'credentials'})
+    @require_auth(aud={'credentials'})
     def get(self, provider):
         """
         List access keys for user
@@ -58,7 +58,7 @@ class OtherCredentialsList(Resource):
 
         return flask.jsonify(result)
 
-    @require_auth_header({'credentials'})
+    @require_auth(aud={'credentials'})
     def post(self, provider):
         """
         Generate a keypair for user

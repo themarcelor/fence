@@ -1,9 +1,7 @@
 import flask
 from flask_restful import Resource
 
-from fence.auth import login_user
 from fence.errors import InternalError, Unauthorized
-from fence.models import IdentityProvider
 
 
 class ShibbolethLoginStart(Resource):
@@ -48,7 +46,6 @@ class ShibbolethLoginFinish(Resource):
             raise InternalError("Missing shibboleth header configuration")
         username = eppn.split('!')[-1] if eppn else None
         if username:
-            login_user(flask.request, username, IdentityProvider.itrust)
             if flask.session.get('redirect'):
                 return flask.redirect(flask.session.get('redirect'))
             return "logged in"

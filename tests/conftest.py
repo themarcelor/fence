@@ -559,7 +559,7 @@ def db(app, request):
 
 
 @fence.app.route('/protected')
-@fence.auth.login_required({'access'})
+@fence.auth.require_auth(aud={'fence'})
 def protected_endpoint(methods=['GET']):
     """
     Add a protected endpoint to the app for testing.

@@ -7,7 +7,6 @@ from collections import OrderedDict
 from boto3 import client
 import uuid
 import json
-import mock
 import os
 import copy
 
@@ -34,6 +33,7 @@ import fence
 from fence import app_init
 from fence import models
 from fence.jwt.keys import Keypair
+from fence.jwt.token import generate_signed_access_token
 
 import tests
 from tests import test_settings
@@ -89,7 +89,7 @@ def indexd_get_external_s3_bucket_acl(file_id):
         'rev': '',
         'size': 10,
         'file_name': 'file1',
-        'urls': ['s3://bucket5/key'],
+        'urls': ['s3://bucket1/key'],
         'hashes': {},
         'acl': ['phs000178', 'phs000218'],
         'form': '',
@@ -479,7 +479,8 @@ def app(kid, rsa_private_key, rsa_public_key):
     mocker.mock_functions()
     root_dir = os.path.dirname(os.path.realpath(__file__))
     app_init(fence.app, test_settings, root_dir=root_dir)
-
+    fence.app.config['TESTING'] = True
+    fence.app.config['DEBUG'] = True
     # We want to set up the keys so that the test application can load keys
     # from the test keys directory, but the default keypair used will be the
     # one using the fixtures. So, stick the keypair at the front of the
@@ -775,6 +776,7 @@ def patch_app_db_session(app, monkeypatch):
             'fence.auth',
             'fence.resources.google.utils',
             'fence.blueprints.link',
+            'fence.blueprints.google',
             'fence.oidc.jwt_generator',
             'fence.user',
         ]
@@ -912,6 +914,7 @@ def cloud_manager():
     patch('fence.resources.google.utils.GoogleCloudManager', manager).start()
     patch('fence.scripting.fence_create.GoogleCloudManager', manager).start()
     patch('fence.resources.google.access_utils.GoogleCloudManager', manager).start()
+    patch('fence.blueprints.google.GoogleCloudManager', manager).start()
     manager.return_value.__enter__.return_value.get_access_key.return_value = {
         "type": "service_account",
         "project_id": "project-id",
@@ -974,11 +977,11 @@ def mock_get(monkeypatch, example_keys_response):
 
         def get(url):
             """Define a mock ``get`` function to return a mocked response."""
-            mocked_response = mock.MagicMock(requests.Response)
+            mocked_response = MagicMock(requests.Response)
             mocked_response.json.return_value = urls_to_responses[url]
             return mocked_response
 
-        monkeypatch.setattr('requests.get', mock.MagicMock(side_effect=get))
+        monkeypatch.setattr('requests.get', MagicMock(side_effect=get))
 
     return do_patch
 

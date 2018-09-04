@@ -2,11 +2,11 @@ import json
 import time
 import uuid
 
-import flask
-import jwt
 from authlib.common.encoding import to_unicode
 from authlib.specs.oidc import CodeIDToken as AuthlibCodeIDToken
 from authlib.specs.oidc import IDTokenError
+import flask
+import jwt
 
 from fence.jwt import keys
 
@@ -14,9 +14,10 @@ from fence.jwt import keys
 SCOPE_DESCRIPTION = {
     'openid': 'default scope',
     'user': 'Know your {idp_names} basic account information and what you are authorized to access.',
-    'data': 'Retrieve controlled-access datasets to which you have access.',
+    'data': 'Retrieve controlled-access datasets to which you have access on your behalf.',
     'credentials': 'View and update your credentials.',
-    'google_credentials': 'temporary google credentials to access data on google',
+    'google_credentials': 'Receive temporary Google credentials to access data on google',
+    'google_service_account': 'Allow registration of external Google service accounts to access data.',
     'admin': 'View and update user authorizations.'
 }
 
@@ -27,11 +28,16 @@ SCOPE_DESCRIPTION = {
 # Only allow web session based auth access credentials so that user
 # can't create a long-lived API key using a short lived access_token
 SESSION_ALLOWED_SCOPES = [
-    'openid', 'user', 'credentials', 'data', 'admin', 'google_credentials']
+    'openid', 'user', 'credentials', 'data', 'admin',
+    'google_credentials', 'google_service_account']
+
 USER_ALLOWED_SCOPES = [
-    'fence', 'openid', 'user', 'data', 'admin', ' google_credentials']
+    'fence', 'openid', 'user', 'data', 'admin',
+    'google_credentials', 'google_service_account']
+
 CLIENT_ALLOWED_SCOPES = [
-    'openid', 'user', 'data', 'admin', 'google_credentials']
+    'openid', 'user', 'data',
+    'google_credentials', 'google_service_account']
 
 
 class JWTResult(object):
@@ -374,9 +380,7 @@ def generate_signed_access_token(
         str: encoded JWT access token signed with ``private_key``
     """
     headers = {'kid': kid}
-
     iat, exp = issued_and_expiration_times(expires_in)
-
     # force exp time if provided
     exp = forced_exp_time or exp
     sub = str(user.id)
@@ -389,6 +393,8 @@ def generate_signed_access_token(
                 'must provide value for `iss` (issuer) field if'
                 ' running outside of flask application'
             )
+    policies = [policy.id for policy in user.policies]
+
     claims = {
         'pur': 'access',
         'aud': scopes,
@@ -402,6 +408,7 @@ def generate_signed_access_token(
                 'name': user.username,
                 'is_admin': user.is_admin,
                 'projects': dict(user.project_access),
+                'policies': policies,
                 'google': {
                     'proxy_group': user.google_proxy_group_id,
                 }
@@ -464,22 +471,13 @@ def generate_id_token(
 
     # If not provided, assume auth time is time this ID token is issued
     auth_time = auth_time or iat
+    policies = [policy.id for policy in user.policies]
 
     # NOTE: if the claims here are modified, be sure to update the
     # `claims_supported` field returned from the OIDC configuration endpoint
     # ``/.well-known/openid-configuration``, in
     # ``fence/blueprints/well_known.py``.
     claims = {
-        'context': {
-            'user': {
-                'name': user.username,
-                'is_admin': user.is_admin,
-                'projects': dict(user.project_access),
-                'email': user.email,
-                'display_name': user.display_name,
-                'phone_number': user.phone_number
-            },
-        },
         'pur': 'id',
         'aud': audiences,
         'sub': str(user.id),
@@ -489,10 +487,22 @@ def generate_id_token(
         'jti': str(uuid.uuid4()),
         'auth_time': auth_time,
         'azp': client_id,
+        'context': {
+            'user': {
+                'name': user.username,
+                'is_admin': user.is_admin,
+                'projects': dict(user.project_access),
+                'policies': policies,
+                'email': user.email,
+                'display_name': user.display_name,
+                'phone_number': user.phone_number
+            },
+        },
     }
-    if user.tags is not None and len(user.tags) > 0:
+    if user.tags:
         claims['context']['user']['tags'] = {
-            tag.key: tag.value for tag in user.tags}
+            tag.key: tag.value for tag in user.tags
+        }
 
     linked_google_email = kwargs.get('linked_google_email')
     linked_google_account_exp = kwargs.get('linked_google_account_exp')

@@ -770,24 +770,28 @@ class UserSyncer(object):
                 for p in projects:
                     project = self._get_or_create(sess, Project, **p)
                     self._projects[p["auth_id"]] = project
-        for _, projects in user_project.iteritems():
-            for project_name in projects.keys():
-                project = (
-                    sess.query(Project).filter(Project.auth_id == project_name).first()
-                )
-                if not project:
-                    data = {"name": project_name, "auth_id": project_name}
-                    project = self._get_or_create(sess, Project, **data)
-                if project_name not in self._projects:
-                    self._projects[project_name] = project
+        with sess.no_autoflush:
+            for _, projects in user_project.iteritems():
+                for project_name in projects.keys():
+                    project = (
+                        sess.query(Project)
+                        .filter(Project.auth_id == project_name)
+                        .first()
+                    )
+                    if not project:
+                        data = {"name": project_name, "auth_id": project_name}
+                        project = self._get_or_create(sess, Project, **data)
+                    if project_name not in self._projects:
+                        self._projects[project_name] = project
 
     @classmethod
     def _get_or_create(self, sess, model, **kwargs):
-        instance = sess.query(model).filter_by(**kwargs).first()
-        if not instance:
-            instance = model(**kwargs)
-            sess.add(instance)
-        return instance
+        with sess.no_autoflush:
+            instance = sess.query(model).filter_by(**kwargs).first()
+            if not instance:
+                instance = model(**kwargs)
+                sess.add(instance)
+            return instance
 
     def sync(self):
         if self.session:

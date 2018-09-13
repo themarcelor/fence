@@ -127,6 +127,13 @@ class GoogleProjectValidity(ValidityInfo):
                     'owned_by_project': True
                 }
             },
+            'google_managed_accounts': {
+                '123456789-compute@developer.gserviceaccount.com': {
+                    'valid_type': None,
+                    'no_external_access': None,
+                    'owned_by_project': True
+                },
+            },
             'access': {
                 'ProjectA': {
                     'exists': True,
@@ -176,6 +183,7 @@ class GoogleProjectValidity(ValidityInfo):
         self._info["valid_member_types"] = None
         self._info["members_exist_in_fence"] = None
         self._info["service_accounts"] = {}
+        self._info["google_managed_accounts"] = {}
         self._info["access"] = {}
 
     def check_validity(self, early_return=True, db=None):
@@ -250,21 +258,42 @@ class GoogleProjectValidity(ValidityInfo):
         # validity. then check all the service accounts. Top level will be
         # invalid if any service accounts are invalid
         service_accounts_validity = ValidityInfo()
+        google_managed_accounts_validity = ValidityInfo()
         for service_account in service_accounts:
-            service_account_validity_info = GoogleServiceAccountValidity(
-                service_account, self.google_project_id
+            service_account_id = str(service_account)
+
+            account_validity_info = GoogleServiceAccountValidity(
+                service_account, self.google_project_id, google_project_number
             )
-            service_account_validity_info.check_validity(early_return=early_return)
-            if not service_account_validity_info and early_return:
+
+            # we do NOT need to check the service account type and external access
+            # for google-managed accounts.
+            if is_google_managed_service_account(service_account_id):
+                account_validity_info.check_validity(
+                    early_return=early_return, check_type_and_access=False
+                )
+
+                # update project with error info from the service accounts
+                google_managed_accounts_validity.set(
+                    service_account_id, account_validity_info
+                )
+            else:
+                account_validity_info.check_validity(
+                    early_return=early_return, check_type_and_access=True
+                )
+
+                # update project with error info from the service accounts
+                service_accounts_validity.set(service_account_id, account_validity_info)
+
+            if not account_validity_info and early_return:
+                # update the overall validity and exit early
+                self.set("service_accounts", service_accounts_validity)
+                self.set("google_managed_accounts", google_managed_accounts_validity)
                 return
 
-            # update project with error info from the service accounts
-            service_account_id = str(service_account)
-            service_accounts_validity.set(
-                service_account_id, service_account_validity_info
-            )
-
+        # update the overall validity
         self.set("service_accounts", service_accounts_validity)
+        self.set("google_managed_accounts", google_managed_accounts_validity)
 
         # get the service accounts for the project to determine all the data
         # the project can access through the service accounts

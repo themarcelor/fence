@@ -537,6 +537,24 @@ def _get_service_account_error_status(
                     "status": 200,
                     "error": None,
                     "error_description": None
+                    "membership_validity": {
+                        "valid_member_types": valid_member_types,
+                        "members_exist_in_fence": members_exist_in_fence,
+                    },
+                    "service_account_validity": {
+                        "test@123456.iam.gserviceaccount.com": {
+                            "owned_by_project": True,
+                            "no_external_access": True,
+                            "valid_type": True
+                        }
+                    },
+                    "google_managed_account_validity": {
+                        "123456789-compute@developer.gserviceaccount.com": {
+                            "valid_type": None,
+                            "no_external_access": None,
+                            "owned_by_project": True
+                        }
+                    },
                 },
                 "project_access": {
                     "projectA": {
@@ -620,57 +638,63 @@ def _get_service_account_email_error_status(validity_info):
 
 
 def _get_google_project_id_error_status(validity_info):
+    response = {
+        "status": 200,
+        "error": None,
+        "error_description": "",
+        "membership_validity": {},
+        "service_account_validity": {},
+        "google_managed_account_validity": {},
+    }
+
     has_access = validity_info.get("monitor_has_access")
     if not has_access:
-        return {
-            "status": 404,
-            "error": "monitor_not_found",
-            "error_description": (
-                "Fence's monitoring service account "
-                "does not have access to the project."
-            ),
-            "membership_validity": {},
-            "service_account_validity": {},
-        }
+        response["status"] = 404
+        response["error"] = "monitor_not_found"
+        response[
+            "error_description"
+        ] = "Fence's monitoring service account does not have access to the project."
+        return response
 
     user_has_access = validity_info.get("user_has_access")
     if not user_has_access:
-        return {
-            "status": 403,
-            "error": "unauthorized_user",
-            "error_description": (
-                "Current user is not an authorized member on the provided "
-                "Google Project."
-            ),
-            "membership_validity": {},
-            "service_account_validity": {},
-        }
+        response["status"] = 403
+        response["error"] = "unauthorized_user"
+        response[
+            "error_description"
+        ] = "Current user is not an authorized member on the provided Google Project."
+        return response
 
     valid_parent_org = validity_info.get("valid_parent_org")
     valid_member_types = validity_info.get("valid_member_types")
     members_exist_in_fence = validity_info.get("members_exist_in_fence")
     service_accounts_validity = validity_info.get("service_accounts")
+    google_managed_accounts_validity = validity_info.get("google_managed_accounts")
 
-    response = {
-        "status": 200,
-        "error": None,
-        "error_description": "",
-        "membership_validity": {
-            "valid_member_types": valid_member_types,
-            "members_exist_in_fence": members_exist_in_fence,
-        },
-        "service_account_validity": {},
+    response["membership_validity"] = {
+        "valid_member_types": valid_member_types,
+        "members_exist_in_fence": members_exist_in_fence,
     }
 
     for sa_account_id, sa_validity in service_accounts_validity:
-        if sa_account_id != validity_info.new_service_account:
-            response["service_account_validity"][sa_account_id] = sa_validity.get_info()
-            if not sa_validity:
-                response["status"] = 403
-                response["error"] = "unauthorized"
-                response[
-                    "error_description"
-                ] = "Project has one or more invalid service accounts. "
+        response["service_account_validity"][sa_account_id] = sa_validity.get_info()
+        if not sa_validity:
+            response["status"] = 403
+            response["error"] = "unauthorized"
+            response[
+                "error_description"
+            ] = "Project has one or more invalid service accounts. "
+
+    for sa_account_id, sa_validity in google_managed_accounts_validity:
+        response["google_managed_account_validity"][
+            sa_account_id
+        ] = sa_validity.get_info()
+        if not sa_validity:
+            response["status"] = 403
+            response["error"] = "unauthorized"
+            response[
+                "error_description"
+            ] = "Project has one or more invalid Google-managed service accounts. "
 
     if not valid_parent_org:
         response["status"] = 403

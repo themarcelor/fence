@@ -332,6 +332,8 @@ class S3IndexedFileLocation(IndexedFileLocation):
             self.parsed_url.netloc, config
         )
 
+        region = 'us-east-1'
+
         user_info = {}
         if not public_data:
             user_info = S3IndexedFileLocation.get_user_info()

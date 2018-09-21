@@ -328,9 +328,9 @@ class S3IndexedFileLocation(IndexedFileLocation):
         if aws_access_key_id == "*":
             return http_url
 
-        region = flask.current_app.boto.get_bucket_region(
-            self.parsed_url.netloc, config
-        )
+        #region = flask.current_app.boto.get_bucket_region(
+        #    self.parsed_url.netloc, config
+        #)
 
         region = 'us-east-1'
 

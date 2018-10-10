@@ -57,8 +57,10 @@ def create_client(
         if not user:
             user = User(username=username, is_admin=is_admin)
             s.add(user)
-        if s.query(Client).filter(Client.name == name).first():
-            raise Exception("client {} already exists".format(name))
+        client = s.query(Client).filter(Client.name == name).first()
+        if client:
+            #raise Exception("client {} already exists".format(name))
+            return client.client_id, client.client_secret
         client = Client(
             client_id=client_id,
             client_secret=hashed_secret,

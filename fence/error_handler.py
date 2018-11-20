@@ -51,6 +51,7 @@ def get_error_details_and_status(error):
         else:
             error_response = {"message": error.message}, error.code
     elif isinstance(error, OAuth2Error):
+        flask.current_app.logger.exception("catch oauth2 exception from authlib")
         error_response = {"message": error.description}, error.status_code
     elif isinstance(error, HTTPException):
         error_response = (

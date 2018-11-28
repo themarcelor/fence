@@ -34,6 +34,7 @@ from fence.jwt.token import (
     generate_signed_refresh_token,
     issued_and_expiration_times,
 )
+from fence.resources.google.utils import get_or_create_proxy_group_id
 from fence.models import (
     Client,
     GoogleServiceAccount,
@@ -1255,7 +1256,9 @@ def force_update_google_link(DB, username, google_email):
 
         if user_account:
             user_id = user_account.id
-            proxy_group_id = user_account.google_proxy_group_id
+            proxy_group_id = get_or_create_proxy_group_id(
+                user_id=user_account.id, username=user_account.username
+            )
         else:
             raise Unauthorized(
                 "Could not determine authed user "

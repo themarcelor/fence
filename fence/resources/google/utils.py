@@ -352,7 +352,7 @@ def create_service_account(client_id, user_id, username, proxy_group_id):
         )
 
 
-def get_or_create_proxy_group_id():
+def get_or_create_proxy_group_id(user_id=None, username=None):
     """
     If no username returned from token or database, create a new proxy group
     for the give user. Also, add the access privileges.
@@ -362,8 +362,10 @@ def get_or_create_proxy_group_id():
     """
     proxy_group_id = _get_proxy_group_id()
     if not proxy_group_id:
-        user_id = current_token["sub"]
-        username = current_token.get("context", {}).get("user", {}).get("name", "")
+        user_id = user_id or current_token["sub"]
+        username = username or current_token.get("context", {}).get("user", {}).get(
+            "name", ""
+        )
         proxy_group_id = _create_proxy_group(user_id, username).id
 
         privileges = current_session.query(AccessPrivilege).filter(

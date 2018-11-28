@@ -360,7 +360,7 @@ def get_or_create_proxy_group_id(user_id=None, username=None):
     Returns:
         int: id of (possibly newly created) proxy group associated with user
     """
-    proxy_group_id = _get_proxy_group_id()
+    proxy_group_id = _get_proxy_group_id(user_id)
     if not proxy_group_id:
         user_id = user_id or current_token["sub"]
         username = username or current_token.get("context", {}).get("user", {}).get(
@@ -395,7 +395,7 @@ def get_or_create_proxy_group_id(user_id=None, username=None):
     return proxy_group_id
 
 
-def _get_proxy_group_id():
+def _get_proxy_group_id(user_id=None):
     """
     Get users proxy group id from the current token, if possible.
     Otherwise, check the database for it.
@@ -410,10 +410,10 @@ def _get_proxy_group_id():
         # we can't determine proxy group id from it so set to None
         proxy_group_id = None
 
+    user_id = user_id or current_token["sub"]
+
     if not proxy_group_id:
-        user = (
-            current_session.query(User).filter(User.id == current_token["sub"]).first()
-        )
+        user = current_session.query(User).filter(User.id == user_id).first()
         proxy_group_id = user.google_proxy_group_id
 
     return proxy_group_id

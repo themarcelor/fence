@@ -352,7 +352,7 @@ def create_service_account(client_id, user_id, username, proxy_group_id):
         )
 
 
-def get_or_create_proxy_group_id(user_id=None, username=None):
+def get_or_create_proxy_group_id(user_id=None, username=None, db=None):
     """
     If no username returned from token or database, create a new proxy group
     for the give user. Also, add the access privileges.
@@ -360,7 +360,9 @@ def get_or_create_proxy_group_id(user_id=None, username=None):
     Returns:
         int: id of (possibly newly created) proxy group associated with user
     """
-    proxy_group_id = _get_proxy_group_id(user_id)
+    session = get_db_session(db)
+
+    proxy_group_id = _get_proxy_group_id(user_id, db=db)
     if not proxy_group_id:
         user_id = user_id or current_token["sub"]
         username = username or current_token.get("context", {}).get("user", {}).get(
@@ -368,7 +370,7 @@ def get_or_create_proxy_group_id(user_id=None, username=None):
         )
         proxy_group_id = _create_proxy_group(user_id, username).id
 
-        privileges = current_session.query(AccessPrivilege).filter(
+        privileges = session.query(AccessPrivilege).filter(
             AccessPrivilege.user_id == user_id
         )
 
@@ -389,13 +391,13 @@ def get_or_create_proxy_group_id(user_id=None, username=None):
                         username=username,
                         project=p.project,
                         access=p.privilege,
-                        session=current_session,
+                        session=session,
                     )
 
     return proxy_group_id
 
 
-def _get_proxy_group_id(user_id=None):
+def _get_proxy_group_id(user_id=None, db=None):
     """
     Get users proxy group id from the current token, if possible.
     Otherwise, check the database for it.
@@ -403,6 +405,8 @@ def _get_proxy_group_id(user_id=None):
     Returnns:
         int: id of proxy group associated with user
     """
+    session = get_db_session(db)
+
     try:
         proxy_group_id = get_users_proxy_group_from_token()
     except Exception:
@@ -413,13 +417,13 @@ def _get_proxy_group_id(user_id=None):
     user_id = user_id or current_token["sub"]
 
     if not proxy_group_id:
-        user = current_session.query(User).filter(User.id == user_id).first()
+        user = session.query(User).filter(User.id == user_id).first()
         proxy_group_id = user.google_proxy_group_id
 
     return proxy_group_id
 
 
-def _create_proxy_group(user_id, username):
+def _create_proxy_group(user_id, username, db=None):
     """
     Create a proxy group for the given user
 
@@ -430,6 +434,7 @@ def _create_proxy_group(user_id, username):
     Return:
         userdatamodel.user.GoogleProxyGroup: the newly created proxy group
     """
+    session = get_db_session(db)
 
     with GoogleCloudManager() as g_cloud:
         prefix = get_prefix_for_google_proxy_groups()
@@ -442,11 +447,11 @@ def _create_proxy_group(user_id, username):
     )
 
     # link proxy group to user
-    user = current_session.query(User).filter_by(id=user_id).first()
+    user = session.query(User).filter_by(id=user_id).first()
     user.google_proxy_group_id = proxy_group.id
 
-    current_session.add(proxy_group)
-    current_session.commit()
+    session.add(proxy_group)
+    session.commit()
 
     flask.current_app.logger.info(
         "Created proxy group {} for user {} with id {}.".format(

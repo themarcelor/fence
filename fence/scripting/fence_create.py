@@ -1257,7 +1257,7 @@ def force_update_google_link(DB, username, google_email):
         if user_account:
             user_id = user_account.id
             proxy_group_id = get_or_create_proxy_group_id(
-                user_id=user_account.id, username=user_account.username
+                user_id=user_account.id, username=user_account.username, db=DB
             )
         else:
             raise Unauthorized(

@@ -403,7 +403,12 @@ def _get_proxy_group_id():
     Returnns:
         int: id of proxy group associated with user
     """
-    proxy_group_id = get_users_proxy_group_from_token()
+    try:
+        proxy_group_id = get_users_proxy_group_from_token()
+    except Exception:
+        # cannot read from token, perhaps it's not within current context. In any case,
+        # we can't determine proxy group id from it so set to None
+        proxy_group_id = None
 
     if not proxy_group_id:
         user = (

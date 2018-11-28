@@ -1221,7 +1221,7 @@ def verify_user_registration(DB):
     validation_check(DB)
 
 
-def force_update_google_link(DB, username, google_email):
+def force_update_google_link(DB, username, google_email, group_prefix):
     """
     WARNING: This function circumvents Google Auth flow, and should only be
     used for internal testing!
@@ -1257,7 +1257,10 @@ def force_update_google_link(DB, username, google_email):
         if user_account:
             user_id = user_account.id
             proxy_group_id = get_or_create_proxy_group_id(
-                user_id=user_account.id, username=user_account.username, db=DB
+                user_id=user_account.id,
+                username=user_account.username,
+                group_prefix=group_prefix,
+                db=DB,
             )
         else:
             raise Unauthorized(

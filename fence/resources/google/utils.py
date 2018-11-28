@@ -6,13 +6,13 @@ import flask
 from flask_sqlalchemy_session import current_session
 from sqlalchemy import desc
 
+from cdislogging import get_logger
 from cirrus import GoogleCloudManager
 from cirrus.google_cloud.iam import GooglePolicyMember
 from cirrus.google_cloud.utils import (
     get_valid_service_account_id_for_client,
     get_valid_service_account_id_for_user,
 )
-
 from userdatamodel.driver import SQLAlchemyDriver
 from userdatamodel.user import GoogleProxyGroup, User, AccessPrivilege
 
@@ -28,8 +28,10 @@ from fence.models import (
     ServiceAccountToGoogleBucketAccessGroup,
 )
 from fence.resources.google import STORAGE_ACCESS_PROVIDER_NAME
-from userdatamodel.user import GoogleProxyGroup, User, AccessPrivilege
 from fence.errors import NotSupported, NotFound
+
+
+logger = get_logger(__name__)
 
 
 def get_or_create_primary_service_account_key(
@@ -190,7 +192,7 @@ def create_google_access_key(client_id, user_id, username, proxy_group_id):
     with GoogleCloudManager() as g_cloud:
         key = g_cloud.get_access_key(service_account.google_unique_id)
 
-    flask.current_app.logger.info(
+    logger.info(
         "Created key with id {} for service account {} in user {}'s "
         "proxy group {} (user's id: {}).".format(
             key.get("private_key_id"),
@@ -338,7 +340,7 @@ def create_service_account(client_id, user_id, username, proxy_group_id):
         current_session.add(service_account)
         current_session.commit()
 
-        flask.current_app.logger.info(
+        logger.info(
             "Created service account {} for proxy group {}.".format(
                 new_service_account["email"], proxy_group_id
             )
@@ -352,7 +354,9 @@ def create_service_account(client_id, user_id, username, proxy_group_id):
         )
 
 
-def get_or_create_proxy_group_id(user_id=None, username=None, db=None):
+def get_or_create_proxy_group_id(
+    user_id=None, username=None, group_prefix=None, db=None
+):
     """
     If no username returned from token or database, create a new proxy group
     for the give user. Also, add the access privileges.
@@ -368,7 +372,9 @@ def get_or_create_proxy_group_id(user_id=None, username=None, db=None):
         username = username or current_token.get("context", {}).get("user", {}).get(
             "name", ""
         )
-        proxy_group_id = _create_proxy_group(user_id, username).id
+        proxy_group_id = _create_proxy_group(
+            user_id, username, group_prefix=group_prefix
+        ).id
 
         privileges = session.query(AccessPrivilege).filter(
             AccessPrivilege.user_id == user_id
@@ -423,7 +429,7 @@ def _get_proxy_group_id(user_id=None, db=None):
     return proxy_group_id
 
 
-def _create_proxy_group(user_id, username, db=None):
+def _create_proxy_group(user_id, username, group_prefix=None, db=None):
     """
     Create a proxy group for the given user
 
@@ -437,7 +443,7 @@ def _create_proxy_group(user_id, username, db=None):
     session = get_db_session(db)
 
     with GoogleCloudManager() as g_cloud:
-        prefix = get_prefix_for_google_proxy_groups()
+        prefix = group_prefix or get_prefix_for_google_proxy_groups()
         new_proxy_group = g_cloud.create_proxy_group_for_user(
             user_id, username, prefix=prefix
         )
@@ -453,7 +459,7 @@ def _create_proxy_group(user_id, username, db=None):
     session.add(proxy_group)
     session.commit()
 
-    flask.current_app.logger.info(
+    logger.info(
         "Created proxy group {} for user {} with id {}.".format(
             new_proxy_group["email"], username, user_id
         )

@@ -307,6 +307,9 @@ def main():
     STORAGE_CREDENTIALS = os.environ.get("STORAGE_CREDENTIALS") or config.get(
         "STORAGE_CREDENTIALS"
     )
+    GOOGLE_GROUP_PREFIX = os.environ.get("GOOGLE_GROUP_PREFIX") or config.get(
+        "GOOGLE_GROUP_PREFIX"
+    )
 
     if args.action == "create":
         yaml_input = args.__dict__["yaml-input"]
@@ -432,7 +435,10 @@ def main():
             sys.exit(1)
     elif args.action == "force-link-google":
         exp = force_update_google_link(
-            DB, username=args.username, google_email=args.google_email
+            DB,
+            username=args.username,
+            google_email=args.google_email,
+            group_prefix=GOOGLE_GROUP_PREFIX,
         )
         print(exp)
 

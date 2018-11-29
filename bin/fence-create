@@ -439,6 +439,7 @@ def main():
             username=args.username,
             google_email=args.google_email,
             group_prefix=GOOGLE_GROUP_PREFIX,
+            storage_credentials=STORAGE_CREDENTIALS,
         )
         print(exp)
 

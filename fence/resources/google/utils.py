@@ -28,6 +28,7 @@ from fence.models import (
     ServiceAccountToGoogleBucketAccessGroup,
 )
 from fence.resources.google import STORAGE_ACCESS_PROVIDER_NAME
+from fence.resources.storage import StorageManager
 from fence.errors import NotSupported, NotFound
 
 
@@ -355,7 +356,7 @@ def create_service_account(client_id, user_id, username, proxy_group_id):
 
 
 def get_or_create_proxy_group_id(
-    user_id=None, username=None, group_prefix=None, db=None
+    user_id=None, username=None, group_prefix=None, db=None, storage_credentials=None
 ):
     """
     If no username returned from token or database, create a new proxy group
@@ -385,14 +386,20 @@ def get_or_create_proxy_group_id(
 
             for sa in storage_accesses:
                 if sa.provider.name == STORAGE_ACCESS_PROVIDER_NAME:
+                    if storage_credentials:
+                        storage_manager = StorageManager(
+                            storage_credentials, logger=logger
+                        )
+                    else:
+                        storage_manager = flask.current_app.storage_manager
 
-                    flask.current_app.storage_manager.logger.info(
+                    storage_manager.logger.info(
                         "grant {} access {} to {} in {}".format(
                             username, p.privilege, p.project_id, p.auth_provider
                         )
                     )
 
-                    flask.current_app.storage_manager.grant_access(
+                    storage_manager.grant_access(
                         provider=(sa.provider.name),
                         username=username,
                         project=p.project,

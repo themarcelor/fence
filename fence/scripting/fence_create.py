@@ -1220,7 +1220,9 @@ def verify_user_registration(DB):
     validation_check(DB)
 
 
-def force_update_google_link(DB, username, google_email, group_prefix):
+def force_update_google_link(
+    DB, username, google_email, group_prefix, storage_credentials=None
+):
     """
     WARNING: This function circumvents Google Auth flow, and should only be
     used for internal testing!
@@ -1260,6 +1262,7 @@ def force_update_google_link(DB, username, google_email, group_prefix):
                 username=user_account.username,
                 group_prefix=group_prefix,
                 db=DB,
+                storage_credentials=storage_credentials,
             )
         else:
             raise Unauthorized(

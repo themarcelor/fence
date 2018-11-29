@@ -1182,7 +1182,6 @@ def _get_or_create_google_provider(db_session):
 
 
 def link_external_bucket(db, name):
-
     """
     Link with bucket owned by an external party. This will create the bucket
     in fence database and create a google group to access the bucket in both

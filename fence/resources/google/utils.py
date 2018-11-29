@@ -373,7 +373,7 @@ def get_or_create_proxy_group_id(
             "name", ""
         )
         proxy_group_id = _create_proxy_group(
-            user_id, username, group_prefix=group_prefix
+            user_id, username, group_prefix=group_prefix, db=db
         ).id
 
         privileges = session.query(AccessPrivilege).filter(

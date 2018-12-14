@@ -91,7 +91,12 @@ class BlankIndex(object):
         index_url = self.indexd.rstrip("/") + "/index/blank/"
         params = {"uploader": self.uploader, "file_name": self.file_name}
         auth = (config["INDEXD_USERNAME"], config["INDEXD_PASSWORD"])
-        indexd_response = requests.post(index_url, json=params, auth=auth)
+        try:
+            indexd_response = requests.post(
+                index_url, json=params, auth=auth, timeout=3,
+            )
+        except requests.exceptions.ReadTimeout:
+            raise InternalError("can't reach indexd service (request timed out)")
         if indexd_response.status_code not in [200, 201]:
             raise InternalError(
                 "received error from indexd trying to create blank record: {}".format(

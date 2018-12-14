@@ -30,26 +30,33 @@ class BotoManager(object):
             https://docs.aws.amazon.com/AmazonS3/latest/dev/DeletingObjectsfromVersioningSuspendedBuckets.html
         """
         try:
-            s3_objects = self.s3_client.list_objects_v2(
-                Bucket=bucket, Prefix=guid, Delimiter="/"
-            )
+            s3_objects = self.s3_client.list_objects_v2(Bucket=bucket, Prefix=guid)
             if not s3_objects.get("Contents"):
                 # file not found in the bucket
                 self.logger.info(
-                    "tried to delete GUID {} but didn't find in bucket {}"
+                    "tried to delete GUID {} but didn't find in bucket {} (ignoring)"
                     .format(guid, bucket)
                 )
                 return
             if len(s3_objects["Contents"]) > 1:
-                raise InternalError("multiple files found with GUID {}".format(guid))
+                raise InternalError(
+                    "multiple files found with GUID {}; aborting delete"
+                    .format(guid)
+                )
             data_object = s3_objects["Contents"][0]
             key = data_object["Key"]
-            version = data_object["VersionId"]
-            self.s3_client.delete_object(Bucket=bucket, Key=key, VersionId=version)
-            self.logger.info(
-                "deleted file for GUID {} in bucket {}"
-                .format(guid, bucket)
-            )
+            response = self.s3_client.delete_object(Bucket=bucket, Key=key)
+            response_metadata = response["ResponseMetadata"]
+            code = response_metadata.get("HTTPStatusCode")
+            if code != 204:
+                raise InternalError(
+                    "failed to delete file for GUID {}: received code {} from AWS"
+                    .format(guid, code)
+                )
+            msg = "deleted file for GUID {} in bucket {}".format(guid, bucket)
+            if response_metadata.get("RetryAttempts", 0):
+                msg += " (after {} retries)".format(response_metadata["RetryAttempts"])
+            self.logger.info(msg)
         except (KeyError, Boto3Error) as e:
             self.logger.exception(e)
             raise InternalError("Failed to delete file: {}".format(e.message))

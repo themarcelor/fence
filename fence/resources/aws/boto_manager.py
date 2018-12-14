@@ -42,8 +42,10 @@ class BotoManager(object):
                 return
             if len(s3_objects["Contents"]) > 1:
                 raise InternalError("multiple files found with GUID {}".format(guid))
-            key = s3_objects["Contents"][0]["Key"]
-            self.s3_client.delete_object(Bucket=bucket, Key=key)
+            data_object = s3_objects["Contents"][0]
+            key = data_object["Key"]
+            version = data_object["VersionId"]
+            self.s3_client.delete_object(Bucket=bucket, Key=key, VersionId=version)
             self.logger.info(
                 "deleted file for GUID {} in bucket {}"
                 .format(guid, bucket)

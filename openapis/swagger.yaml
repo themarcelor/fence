@@ -41,6 +41,8 @@ tags:
     description: Get public keys used to validate JWTs issued by fence
   - name: rbac
     description: Manage policies for role-based access control (RBAC)
+  - name: oidc-federation
+    description: OpenID Connect Federation 1.0 - draft 07
 paths:
   /oauth2/authorize:
     get:
@@ -1339,6 +1341,160 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/JWKS'
+  /.well-known/openid-federation (fetch):
+    get:
+      tags:
+        - oidc-federation
+      summary: Fetch Entity Statements Request
+      description: >-
+        See [OIDC Draft Spec](https://openid.net/specs/openid-connect-federation-1_0.html#rfc.section.5.1.1) for details.
+      parameters:
+        - in: path
+          name: iss
+          schema:
+            type: string
+          required: true
+          description: The entity identifier of the issuer from which you want an entity statement issued. Because of the normalization of the URL, multiple issuers may resolve to a shared federation API. This parameter makes it explicit exactly which issuer we want entity statements from.
+        - in: path
+          name: op
+          schema:
+            type: string
+          required: false
+          description: If not present MUST be treated as `fetch`
+        - in: path
+          name: sub
+          schema:
+            type: string
+          required: false
+          description: The entity identifier of the subject for which you would like an entity statement issued. If this parameter is left out, it is considered to be the same as the issuer, and would indicate a request for a self issued statement.
+        - in: path
+          name: aud
+          schema:
+            type: string
+          required: false
+          description: The entity identifier of the requester. The issuing entity may choose to include this parameter to form the entity statement specifically for this target, in which the aud claim also SHOULD be present in the entity statement self.
+      responses:
+        '200':
+          description: |
+            > WARNING: THIS IS NOT ACTUALLY JSON. It's a signed JWT. Example shown as JSON.
+            A positive response is a signed entity statement where the content type MUST be set to application/jose
+          content:
+            'application/jose':
+              schema:
+                $ref: '#/components/schemas/OidcEntityStatement'
+        '400':
+          description: 'failure'
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/OidcFederationError'
+  /.well-known/openid-federation (resolve_metadata):
+    get:
+      tags:
+        - oidc-federation
+      summary: Trust Negotiation Request
+      description: >-
+        See [OIDC Draft Spec](https://openid.net/specs/openid-connect-federation-1_0.html#rfc.section.5.2.1) for details.
+      parameters:
+        - in: path
+          name: respondent
+          schema:
+            type: string
+          required: true
+          description: The entity identifier of the entity whose metadata are requested. Because of the normalization of the URL, multiple entity identifiers may resolve to a shared federation API. This parameter makes it explicit exactly which entity is expected.
+        - in: path
+          name: op
+          schema:
+            type: string
+          required: true
+          description: MUST be set to `resolve_metadata`
+        - in: path
+          name: peer
+          schema:
+            type: string
+          required: true
+          description: The entity identifier of the entity the information is requested for. This must be a leaf entity.
+        - in: path
+          name: type
+          schema:
+            type: string
+          required: true
+          description: The metadata type to resolve. In spec, the metadata types listed in [Metadata](https://openid.net/specs/openid-connect-federation-1_0.html#metadata).
+        - in: path
+          name: anchor
+          schema:
+            type: string
+          required: true
+          description: The trust anchor the remote peer MUST use when resolving the metadata
+      responses:
+        '200':
+          description: |
+            > WARNING: THIS IS NOT ACTUALLY JSON. It's a signed JWT. Example shown as JSON.
+            A positive response is a signed entity statement where the content type MUST be set to application/jose
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/OidcTrustResponse'
+        '400':
+          description: 'failure'
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/OidcFederationError'
+  /.well-known/openid-federation (listing):
+    get:
+      tags:
+        - oidc-federation
+      summary: Trust Negotiation Request
+      description: >-
+        See [OIDC Draft Spec](https://openid.net/specs/openid-connect-federation-1_0.html#rfc.section.5.3.1) for details.
+      parameters:
+        - in: path
+          name: iss
+          schema:
+            type: string
+          required: true
+          description: The entity identifier of the entity from which an entity listing is requested. Because of the normalization of the URL, multiple entity identifiers may resolve to a shared federation API. This parameter makes it explicit exactly which entity is expected.
+        - in: path
+          name: op
+          schema:
+            type: string
+          required: true
+          description: MUST be set to `listing`
+        - in: path
+          name: type
+          schema:
+            type: string
+          required: false
+          description: Provide this parameter to filter the results to entity statements that contain entries for this specific metadata type.
+        - in: path
+          name: sub_is_leaf
+          schema:
+            type: string
+          required: false
+          description: If left out, result should include both leaf entities and intermediate nodes. If set to true, the response should contain only leaf entities. If set to false, the response should contain only intermediate nodes.
+        - in: path
+          name: metadata_claims
+          schema:
+            type: string
+          required: false
+          description: A comma separated list of claim names that the requester would like to get values for for each entity. If left out or an empty string, the response should contain an empty object for each of the known entities. The set of claim names that can be used are defined in metadata. *Note* that while type and sub_is_leaf can be used to filter out which entities to return this only affects what is returned about each returned entity.
+      responses:
+        '200':
+          description: |
+            > WARNING: THIS IS NOT ACTUALLY JSON. It's a signed JWT. Example shown as JSON.
+            A positive response is a signed entity statement where the content type MUST be set to application/jose
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/OidcEntityListResponse'
+        '400':
+          description: 'failure'
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/OidcFederationError'
+
 components:
   requestBodies:
     APIKey:
@@ -1358,6 +1514,167 @@ components:
           scopes:
             user: generic user access
   schemas:
+    OidcTrustResponse:
+      type: object
+      properties:
+        organization:
+          type: string
+          required: true
+          description:
+      example:
+        organization: University of Ume?
+        contacts:
+          - legal@umu.se
+          - technical@umu.se
+        logo_uri: https://www.umu.se/SRWStatic/img/umu-logo-left-neg-SE.svg
+        policy_uri: https://www.umu.se/en/about-the-website/legal-information/
+        authorization_endpoint: https://idp.umu.se/openid/authorization
+        token_endpoint: https://idp.umu.se/openid/token
+        response_types_supported:
+          - code
+          - code id_token
+          - token
+        grant_types_supported:
+          - authorization_code
+          - implicit
+          - urn:ietf:params:oauth:grant-type:jwt-bearer
+        subject_types_supported:
+          - pairwise
+        id_token_signing_alg_values_supported:
+          - RS256
+
+    OidcEntityListResponse:
+      type: array
+      description:
+      items:
+        type: object
+        properties:
+          entity_id:
+            type: string
+          requested_claims:
+            type: array
+            items:
+              type: object
+              properties:
+                example_claim:
+                  type: string
+                  description:
+      example:
+        https://ntnu.andreas.labs.uninett.no/:
+          client_name: NTNU Labs
+        https://blackboard.ntnu.no/openid/callback:
+          client_name: Blackboard
+        https://serviceprovider.andreas.labs.uninett.no/application17:
+          client_name: Test application
+
+    OidcEntityStatement:
+      type: object
+      properties:
+        iss:
+          type: string
+          required: true
+          description: The entity identifier of the issuer of the statement. If the iss and the sub are identical, the issuer is making a statement about itself.
+        sub:
+          type: string
+          required: true
+          description: The entity identifier of the subject
+        iat:
+          type: string
+          required: true
+          description: The time the statement was issued. Its value is a JSON number representing the number of seconds from 1970-01-01T0:0:0Z as measured in UTC until the date/time. See RFC 3339 for details regarding date/times in general and UTC in particular.
+        exp:
+          type: string
+          required: true
+          description: Expiration time on or after which the statement MUST NOT be accepted for processing. Its value is a JSON number representing the number of seconds from 1970-01-01T0:0:0Z as measured in UTC until the date/time.
+        jwks:
+          type: string
+          required: true
+          description: A JSON Web Key Set (JWKS) representing the public part of the subject entity's signing keys. The corresponding private key is used by leaf entities to sign entity statements about themselves, and intermediate entities to sign statements about other entities. The keys that can be found here are primarily intended to sign entity statements, and should not be used in other protocols.
+        authority_hints:
+          type: string
+          required: false
+          description: A JSON object where the keys are the entity id's of the intermediate entities that may issue an entity statement about the issuer entity. The value MUST be a JSON array of entities that are further up in the trust chain. The array may be an empty list. The JSON array can be used to simplify the selection of trust chains without the need for following all possible trust chains.
+        metadata:
+          type: string
+          required: false
+          description: JSON object including protocol specific metadata claims that represent the issuers metadata. The keys of the JSON object represent the metadata type identifier, and their value MUST be a JSON object representing the metadata according to the metadata schema of that metadata type. An entity statement may contain multiple metadata statements, but only one for each metadata type.
+        metadata_policy:
+          type: string
+          required: false
+          description: JSON object that describes a metadata policy. The keys of the JSON object are the metadata type identifier, and their value MUST be a JSON object representing the metadata according to the metadata schema of that metadata type. An entity statement may contain multiple metadata statements, but only one for each metadata type. If the metadata type identifier is federation_entity then the policy MUST be applied to the immediate subordinate in the trust chain unless that is a leaf entity.
+        sub_is_leaf:
+          type: boolean
+          required: false
+          description: Boolean value that indicates whether the subject is considered a leaf entity. A leaf entity is not trusted to issue policy statements about other entities. If this property is left out, it is considered to be false.
+      example:
+        iss: https://feide.no
+        sub: https://ntnu.no
+        iat: 1516239022
+        exp: 1516298022
+        metadata_policy:
+          openid_provider:
+            issuer:
+              value: https://ntnu.no
+            organization_name:
+              value: NTNU
+            id_token_signing_alg_values_supported:
+              subset_of:
+                - RS256
+                - RS384
+                - RS512
+          openid_client:
+            organization_name:
+              value: NTNU
+            grant_types_supported:
+              subset_of:
+                - authorization_code
+                - implicit
+            scopes:
+              subset_of:
+                - openid
+                - profile
+                - email
+                - phone
+        jwks:
+          keys:
+            - alg: RS256
+              e: AQAB
+              ext: true
+              key_ops:
+                - verify
+              kid: key1
+              kty: RSA
+              n: pnXBOusEANuug6ewezb9J_...
+              use: sig
+        authority_hints:
+          https://edugain.org/federation:
+            - https://edugain.org/federation
+
+
+    OidcFederationError:
+      type: object
+      required:
+        - op
+        - error
+        - error_description
+      properties:
+        op:
+          type: string
+          required: true
+          description: Which operation was the request processed as.
+        error:
+          type: string
+          required: true
+          description: The error code.
+        error_description:
+          type: string
+          required: true
+          description: A human readable short text describing the error.
+      example:
+        op: "fetch"
+        error: "invalid_request"
+        error_description: "Required request parameter [iss] was missing."
+
     RequestUploadBlank:
       type: object
       required:

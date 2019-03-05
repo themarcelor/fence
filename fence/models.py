@@ -112,8 +112,8 @@ class Client(Base, OAuth2ClientMixin):
         backref=backref(
             "clients",
             cascade="all, delete-orphan",
+            passive_deletes=True,
         ),
-        passive_deletes=True
     )
 
     # this is for internal microservices to skip user grant
@@ -245,8 +245,8 @@ class AuthorizationCode(Base, OAuth2AuthorizationCodeMixin):
         backref=backref(
             "authorization_codes",
             cascade="all, delete-orphan",
+            passive_deletes=True,
         ),
-        passive_deletes=True
     )
 
     nonce = Column(String, nullable=True)
@@ -298,8 +298,8 @@ class GoogleServiceAccount(Base):
         backref=backref(
             "google_service_accounts",
             cascade="all, delete-orphan",
+            passive_deletes=True,
         ),
-        passive_deletes=True
     )
 
     google_project_id = Column(String, nullable=False)
@@ -326,8 +326,8 @@ class UserGoogleAccount(Base):
         backref=backref(
             "user_google_accounts",
             cascade="all, delete-orphan",
+            passive_deletes=True,
         ),
-        passive_deletes=True
     )
 
 
@@ -346,8 +346,7 @@ class UserGoogleAccountToProxyGroup(Base):
     )
     user_google_account = relationship(
             "UserGoogleAccount",
-            backref=backref("user_google_account_to_proxy_group", cascade="all, delete-orphan"),
-            passive_deletes=True
+            backref=backref("user_google_account_to_proxy_group", cascade="all, delete-orphan", passive_deletes=True),
     )
 
     proxy_group_id = Column(
@@ -355,8 +354,7 @@ class UserGoogleAccountToProxyGroup(Base):
     )
     google_proxy_group = relationship(
             "GoogleProxyGroup",
-            backref=backref("user_google_account_to_proxy_group", cascade="all, delete-orphan"),
-            passive_deletes=True
+            backref=backref("user_google_account_to_proxy_group", cascade="all, delete-orphan", passive_deletes=True),
     )
 
     expires = Column(BigInteger)
@@ -380,8 +378,7 @@ class GoogleServiceAccountKey(Base):
     )
     google_service_account = relationship(
             "GoogleServiceAccount",
-            backref=backref("google_service_account_keys", cascade="all, delete-orphan"),
-            passive_deletes=True
+            backref=backref("google_service_account_keys", cascade="all, delete-orphan", passive_deletes=True),
     )
 
     expires = Column(BigInteger)
@@ -405,8 +402,8 @@ class GoogleBucketAccessGroup(Base):
         backref=backref(
                     "google_bucket_access_groups",
                     cascade="all, delete-orphan",
+                    passive_deletes=True,
                 ),
-        passive_deletes=True
     )
 
     email = Column(String, nullable=False)
@@ -431,8 +428,8 @@ class GoogleProxyGroupToGoogleBucketAccessGroup(Base):
         backref=backref(
                     "google_proxy_group_to_google_bucket_access_group",
                     cascade="all, delete-orphan",
+                    passive_deletes=True,
                 ),
-        passive_deletes=True
     )
 
     access_group_id = Column(
@@ -443,8 +440,8 @@ class GoogleProxyGroupToGoogleBucketAccessGroup(Base):
         backref=backref(
                 "google_proxy_group_to_google_bucket_access_group",
                 cascade="all, delete-orphan",
+                passive_deletes=True,
             ),
-        passive_deletes=True
     )
 
 
@@ -473,8 +470,8 @@ class ServiceAccountAccessPrivilege(Base):
         backref=backref(
             "sa_access_privileges",
             cascade="all, delete-orphan",
+            passive_deletes=True,
         ),
-        passive_deletes=True
     )
 
     service_account_id = Column(
@@ -485,8 +482,8 @@ class ServiceAccountAccessPrivilege(Base):
         backref=backref(
             "access_privileges",
             cascade="all, delete-orphan",
+            passive_deletes=True,
         ),
-        passive_deletes=True
     )
 
 
@@ -501,9 +498,9 @@ class ServiceAccountToGoogleBucketAccessGroup(Base):
         "UserServiceAccount",
         backref=backref(
             "to_access_groups",
-            cascade="all, delete-orphan"
+            cascade="all, delete-orphan",
+            passive_deletes=True,
         ),
-        passive_deletes=True
     )
 
     expires = Column(BigInteger)
@@ -517,8 +514,8 @@ class ServiceAccountToGoogleBucketAccessGroup(Base):
         backref=backref(
             "to_access_groups",
             cascade="all, delete-orphan",
+            passive_deletes=True,
         ),
-        passive_deletes=True
     )
 
 

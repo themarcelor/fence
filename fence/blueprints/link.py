@@ -448,9 +448,15 @@ def _force_update_user_google_account(
     if not user_google_account:
         if _allow_new:
             if user_id is not None:
+                # TODO
+                print("About to call add new user. It should print a thing")
                 user_google_account = add_new_user_google_account(
                     user_id, google_email, current_session
                 )
+                # TODO
+                print("OK. app.debug: " + str(flask.current_app.debug))
+                print("Just for fun, logger.level: " + str(flask.current_app.logger.level))
+                print("About to logger.info()")
                 flask.current_app.logger.info(
                     "Linking Google account {} to user with id {}.".format(
                         google_email, user_id
@@ -473,10 +479,16 @@ def _force_update_user_google_account(
         requested_expiration = int(time.time()) + requested_expires_in
         expiration = min(requested_expiration, expiration)
 
+    # TODO
+    print("About to call force update. It should print a thing")
     force_update_user_google_account_expiration(
         user_google_account, proxy_group_id, google_email, expiration, current_session
     )
 
+    # TODO
+    print("OK. app.debug: " + str(flask.current_app.debug))
+    print("Just for fun, logger.level: " + str(flask.current_app.logger.level))
+    print("About to logger.info()")
     flask.current_app.logger.info(
         "Adding user's (id: {}) Google account to their proxy group (id: {})."
         " Expiration: {}".format(
@@ -512,6 +524,9 @@ def force_update_user_google_account_expiration(
             the proxy group
         session: db session to work with
     """
+    # TODO
+    print("************* Force update user ***************")
+    # TODO
     account_in_proxy_group = (
         session.query(UserGoogleAccountToProxyGroup)
         .filter(
@@ -536,6 +551,9 @@ def force_update_user_google_account_expiration(
 
 
 def add_new_user_google_account(user_id, google_email, session):
+    # TODO
+    print("************* Add new user ***************")
+    # TODO
     user_google_account = UserGoogleAccount(email=google_email, user_id=user_id)
     session.add(user_google_account)
     session.commit()

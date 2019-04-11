@@ -67,6 +67,11 @@ def make_login_blueprint(app):
 
         def absolute_login_url(provider_id):
             base_url = config["BASE_URL"].rstrip("/")
+            if provider_id not in IDP_URL_MAP:
+                raise InternalError(
+                    "identity provider {} is not supported",
+                    provider_id
+                )
             return base_url + "/login/{}".format(IDP_URL_MAP[provider_id])
 
         def provider_info(idp_id):

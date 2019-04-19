@@ -197,6 +197,6 @@ def test_get_user_groups(db_session, awg_users):
             "projects": ["test_project_1"],
         },
     ]
-    expected_groups.sort()
-    groups["groups"].sort()
-    assert groups["groups"] == expected_groups
+    assert len(expected_groups) == len(groups["groups"]) == 2
+    assert expected_groups[0] in groups["groups"]
+    assert expected_groups[1] in groups["groups"]

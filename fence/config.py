@@ -2,7 +2,7 @@ import os
 import glob
 from yaml import safe_load as yaml_load
 from yaml.scanner import ScannerError
-import urlparse
+import urllib.parse
 
 import cirrus
 from jinja2 import Template, TemplateSyntaxError
@@ -40,7 +40,7 @@ class Config(dict):
         return key in self._configs
 
     def __iter__(self):
-        for key, value in self._configs.iteritems():
+        for key, value in list(self._configs.items()):
             yield key, value
 
     def __getitem__(self, key):
@@ -118,22 +118,22 @@ class Config(dict):
         # the default will be used.
         common_keys = {
             key: value
-            for (key, value) in config.iteritems()
+            for (key, value) in list(config.items())
             if key in provided_configurations
         }
         keys_not_provided = {
             key: value
-            for (key, value) in config.iteritems()
+            for (key, value) in list(config.items())
             if key not in provided_configurations
         }
         keys_to_update = {
             key: value
-            for (key, value) in provided_configurations.iteritems()
+            for (key, value) in list(provided_configurations.items())
             if key in common_keys
         }
         unknown_keys = {
             key: value
-            for (key, value) in provided_configurations.iteritems()
+            for (key, value) in list(provided_configurations.items())
             if key not in common_keys
         }
 
@@ -142,14 +142,14 @@ class Config(dict):
         if keys_not_provided:
             logger.warning(
                 "Did not provide key(s) {} in {}. Will be set to default value(s) from {}.".format(
-                    keys_not_provided.keys(), provided_config_path, default_cfg_path
+                    list(keys_not_provided.keys()), provided_config_path, default_cfg_path
                 )
             )
 
         if unknown_keys:
             logger.warning(
                 "Unknown key(s) {} found in {}. Will be ignored.".format(
-                    unknown_keys.keys(), provided_config_path
+                    list(unknown_keys.keys()), provided_config_path
                 )
             )
 
@@ -215,7 +215,7 @@ def nested_render(cfg, fully_rendered_cfgs, replacements):
         dict: Configurations with template vars replaced
     """
     try:
-        for key, value in cfg.iteritems():
+        for key, value in list(cfg.items()):
             replacements.update(cfg)
             fully_rendered_cfgs[key] = {}
             fully_rendered_cfgs[key] = nested_render(
@@ -224,7 +224,7 @@ def nested_render(cfg, fully_rendered_cfgs, replacements):
                 replacements=replacements,
             )
             # new namespace, remove current vars (no longer available as replacements)
-            for old_cfg, value in cfg.iteritems():
+            for old_cfg, value in list(cfg.items()):
                 replacements.pop(old_cfg, None)
 
         return fully_rendered_cfgs
@@ -321,7 +321,7 @@ class FenceConfig(Config):
             self._set_default(default, default_config=default_config)
 
         if "ROOT_URL" not in self._configs and "BASE_URL" in self._configs:
-            url = urlparse.urlparse(self._configs["BASE_URL"])
+            url = urllib.parse.urlparse(self._configs["BASE_URL"])
             self._configs["ROOT_URL"] = "{}://{}".format(url.scheme, url.netloc)
 
         # allow authlib traffic on http for development if enabled. By default

@@ -131,13 +131,17 @@ class AuthorizationCodeGrant(AuthlibAuthorizationCodeGrant):
         if client_params:
             # authenticate the client if client authentication is included
             client_id, client_secret = client_params
+            # import pdb
+            # pdb.set_trace()
             client = self.get_and_validate_client(client_id)
             # Client secrets are stored as hash.
-            hashed = client.client_secret
+            hashed = client.client_secret.encode("utf-8")
             if (
                 bcrypt.hashpw(client_secret.encode("utf-8"), hashed.encode("utf-8"))
                 != hashed
             ):
+                # import pdb
+                # pdb.set_trace()
                 raise InvalidClientError(uri=self.uri)
 
             return client
@@ -147,7 +151,9 @@ class AuthorizationCodeGrant(AuthlibAuthorizationCodeGrant):
         # authentication requirements)
         client_id = self.params.get("client_id")
         client = self.get_and_validate_client(client_id)
-        if client.check_client_type("confidential") or client.client_secret:
+        if client.check_client_type("confidential") or client.client_secret.encode(
+            "utf-8"
+        ):
             raise UnauthorizedClientError(uri=self.uri)
 
         return client

@@ -319,7 +319,7 @@ class ArboristClient(object):
             return
         elif response.status_code >= 400:
             raise ArboristError(
-                "could not delete role in arborist: {}".format(response.json()["error"])
+                "could not delete role in arborist: {}".format(response.json["error"])
             )
 
     @_arborist_retry()

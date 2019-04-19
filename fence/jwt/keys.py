@@ -157,10 +157,10 @@ class Keypair(object):
                 "missing public key file; expected file to exist: " + prv_filepath
             )
 
-        with open(pub_filepath, "r") as f:
+        with open(pub_filepath, encoding="utf-8") as f:
             public_key = f.read()
 
-        with open(prv_filepath, "r") as f:
+        with open(prv_filepath, encoding="utf-8") as f:
             private_key = f.read()
 
         kid = naming_function(os.path.basename(keys_dir))

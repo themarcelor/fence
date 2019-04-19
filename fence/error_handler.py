@@ -1,5 +1,5 @@
 import uuid
-from httplib import responses as http_responses
+from http.client import responses as http_responses
 import flask
 from flask import render_template
 from werkzeug.exceptions import HTTPException
@@ -69,7 +69,13 @@ def get_error_details_and_status(error):
             error_code = error.code
         elif hasattr(error, "status_code"):
             error_code = error.status_code
-        error_response = {"message": error.message}, error_code
+
+        if hasattr(error, "message"):
+            message = error.message
+        else:
+            message = str(error)
+
+        error_response = {"message": message}, error_code
 
     return error_response
 

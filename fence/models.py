@@ -357,6 +357,7 @@ class GoogleServiceAccountKey(Base):
             return self
 
 
+# TODO make (bucket_id, email) <- unique requirement
 class GoogleBucketAccessGroup(Base):
     __tablename__ = "google_bucket_access_group"
     id = Column(Integer, primary_key=True)
@@ -379,6 +380,7 @@ class GoogleBucketAccessGroup(Base):
             return self
 
 
+# TODO make (proxy_group_id, access_group_id) <- unique requirement
 class GoogleProxyGroupToGoogleBucketAccessGroup(Base):
     __tablename__ = "google_proxy_group_to_google_bucket_access_group"
     id = Column(Integer, primary_key=True)
@@ -433,6 +435,7 @@ class ServiceAccountAccessPrivilege(Base):
     )
 
 
+# TODO make (service_account_id, access_group_id) <- unique requirement
 class ServiceAccountToGoogleBucketAccessGroup(Base):
     __tablename__ = "service_account_to_google_bucket_access_group"
     id = Column(Integer, primary_key=True)
@@ -481,7 +484,9 @@ def migrate(driver):
         UserRefreshToken.__tablename__, md, autoload=True, autoload_with=driver.engine
     )
     if str(table.c.expires.type) != "BIGINT":
-        print("Altering table %s expires to BIGINT" % (UserRefreshToken.__tablename__))
+        print(
+            ("Altering table %s expires to BIGINT" % (UserRefreshToken.__tablename__))
+        )
         with driver.session as session:
             session.execute(to_timestamp)
         with driver.session as session:
@@ -504,8 +509,10 @@ def migrate(driver):
 
     if "_allowed_scopes" not in table.c:
         print(
-            "Altering table {} to add _allowed_scopes column".format(
-                Client.__tablename__
+            (
+                "Altering table {} to add _allowed_scopes column".format(
+                    Client.__tablename__
+                )
             )
         )
         with driver.session as session:
@@ -802,7 +809,7 @@ def _update_for_authlib(driver, md):
     add_client_col = lambda col: add_column_if_not_exist(
         Client.__tablename__, column=col, driver=driver, metadata=md
     )
-    map(add_client_col, CLIENT_COLUMNS_TO_ADD)
+    list(map(add_client_col, CLIENT_COLUMNS_TO_ADD))
     CODE_COLUMNS_TO_ADD = [Column("response_type", Text, default="")]
 
     with driver.session as session:
@@ -819,7 +826,7 @@ def _update_for_authlib(driver, md):
     add_code_col = lambda col: add_column_if_not_exist(
         AuthorizationCode.__tablename__, column=col, driver=driver, metadata=md
     )
-    map(add_code_col, CODE_COLUMNS_TO_ADD)
+    list(map(add_code_col, CODE_COLUMNS_TO_ADD))
     with driver.session as session:
         session.execute("ALTER TABLE client ALTER COLUMN client_secret DROP NOT NULL")
         session.commit()

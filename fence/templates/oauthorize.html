@@ -54,7 +54,7 @@ main {
     left: calc(50% - 512px);
 }
 .auth-dialog {
-    border: #9B9B9B solid 1px; 
+    border: #9B9B9B solid 1px;
     border-radius: 8px;
     background-color: white;
     width:1025px;
@@ -172,7 +172,6 @@ h1.auth-title{
         $("#yes").click(function(){
           $.ajax({
             type : 'POST',
-            //remove the .php from results.php.php
             url : window.location.href,
             //Add the request header
             headers : {
@@ -192,7 +191,6 @@ h1.auth-title{
         $("#no").click(function(){
           $.ajax({
             type : 'POST',
-            //remove the .php from results.php.php
             url : window.location.href,
             //Add the request header
             headers : {

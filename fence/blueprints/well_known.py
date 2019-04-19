@@ -21,6 +21,7 @@ def jwks():
     The return value from this endpoint is defined by RFC 7517.
     """
     keys = [keypair.public_key_to_jwk() for keypair in flask.current_app.keypairs]
+    print(keys)
     return flask.jsonify({"keys": keys})
 
 

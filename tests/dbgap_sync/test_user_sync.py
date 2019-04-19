@@ -327,7 +327,7 @@ def test_update_arborist(syncer, db_session):
     # For every user in the user data, check that the matching policies were
     # created, and also granted to this user, i.e. the entry in the database
     # for this user has policies for everything in the original user data.
-    for username, data in user_data["users"].items():
+    for username, data in list(user_data["users"].items()):
         if "projects" not in data:
             continue
         for project in data["projects"]:

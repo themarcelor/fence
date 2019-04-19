@@ -54,14 +54,14 @@ class RevocationEndpoint(authlib.specs.rfc7009.RevocationEndpoint):
 
         # The stored client secret is hashed, so hash the secret from basic
         # authorization header to check against stored hash.
-        hashed = client.client_secret
+        hashed = client.client_secret.encode("utf-8")
         if (
             bcrypt.hashpw(client_secret.encode("utf-8"), hashed.encode("utf-8"))
             != hashed
         ):
-            logger.debug(
-                "client secret hash does not match stored secret hash"
-            )
+            # import pdb
+            # pdb.set_trace()
+            logger.debug("client secret hash does not match stored secret hash")
             raise InvalidClientError(uri=self.uri)
 
         self._client = client

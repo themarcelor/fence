@@ -21,4 +21,6 @@ def create_basic_header_for_client(oauth_client):
     """
     Wrap ``create_basic_header`` to make a header for the client.
     """
-    return create_basic_header(oauth_client.client_id, oauth_client.client_secret)
+    return create_basic_header(
+        oauth_client.client_id, oauth_client.client_secret.decode("utf-8")
+    )

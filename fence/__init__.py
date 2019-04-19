@@ -16,7 +16,9 @@ from fence.oidc.server import server
 from fence.rbac.client import ArboristClient
 from fence.resources.aws.boto_manager import BotoManager
 from fence.resources.openid.google_oauth2 import GoogleOauth2Client as GoogleClient
-from fence.resources.openid.microsoft_oauth2 import MicrosoftOauth2Client as MicrosoftClient
+from fence.resources.openid.microsoft_oauth2 import (
+    MicrosoftOauth2Client as MicrosoftClient
+)
 from fence.resources.openid.orcid_oauth2 import OrcidOauth2Client as ORCIDClient
 from fence.resources.storage import StorageManager
 from fence.resources.user.user_session import UserSessionInterface
@@ -39,7 +41,7 @@ from cdislogging import get_logger
 
 # Can't read config yet. Just set to debug for now, else no handlers.
 # Later, in app_config(), will actually set level based on config
-logger = get_logger(__name__, log_level='debug')
+logger = get_logger(__name__, log_level="debug")
 
 app = flask.Flask(__name__)
 CORS(app=app, headers=["content-type", "accept"], expose_headers="*")
@@ -189,7 +191,7 @@ def app_config(
 
 def _setup_data_endpoint_and_boto(app):
     if "AWS_CREDENTIALS" in config and len(config["AWS_CREDENTIALS"]) > 0:
-        value = config["AWS_CREDENTIALS"].values()[0]
+        value = list(config["AWS_CREDENTIALS"].values())[0]
         app.boto = BotoManager(value, logger=logger)
         app.register_blueprint(fence.blueprints.data.blueprint, url_prefix="/data")
 
@@ -202,7 +204,7 @@ def _load_keys(app, root_dir):
 
     app.jwt_public_keys = {
         config["BASE_URL"]: OrderedDict(
-            [(str(keypair.kid), str(keypair.public_key)) for keypair in app.keypairs]
+            [(keypair.kid, keypair.public_key) for keypair in app.keypairs]
         )
     }
 
@@ -226,7 +228,7 @@ def _set_authlib_cfgs(app):
 
 
 def _setup_oidc_clients(app):
-    enabled_idp_ids = config["ENABLED_IDENTITY_PROVIDERS"]["providers"].keys()
+    enabled_idp_ids = list(config["ENABLED_IDENTITY_PROVIDERS"]["providers"].keys())
 
     # Add OIDC client for Google if configured.
     configured_google = (

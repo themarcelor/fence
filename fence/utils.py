@@ -6,8 +6,8 @@ from random import SystemRandom
 import re
 import string
 import requests
-from urllib import urlencode
-from urlparse import parse_qs, urlsplit, urlunsplit
+from urllib.parse import urlencode
+from urllib.parse import parse_qs, urlsplit, urlunsplit
 
 import flask
 from userdatamodel.driver import SQLAlchemyDriver
@@ -23,7 +23,7 @@ alphanumeric = string.ascii_uppercase + string.ascii_lowercase + string.digits
 
 
 def random_str(length):
-    return "".join(rng.choice(alphanumeric) for _ in xrange(length))
+    return "".join(rng.choice(alphanumeric) for _ in range(length))
 
 
 def json_res(data):
@@ -47,8 +47,8 @@ def create_client(
     client_secret = None
     hashed_secret = None
     if confidential:
-        client_secret = random_str(55)
-        hashed_secret = bcrypt.hashpw(client_secret, bcrypt.gensalt())
+        client_secret = random_str(55).encode("utf-8")
+        hashed_secret = bcrypt.hashpw(client_secret, bcrypt.gensalt()).decode("utf-8")
     auth_method = "client_secret_basic" if confidential else "none"
     with driver.session as s:
         user = query_for_user(session=s, username=username)
@@ -91,9 +91,8 @@ def hash_secret(f):
                 )
                 if client:
                     form["client_secret"] = bcrypt.hashpw(
-                        form["client_secret"].encode("utf-8"),
-                        client.client_secret.encode("utf-8"),
-                    )
+                        form["client_secret"], client.client_secret.encode("utf-8")
+                    ).decode("utf-8")
                 flask.request.form = ImmutableMultiDict(form)
 
         return f(*args, **kwargs)
@@ -123,7 +122,7 @@ def convert_key(d, converter):
         return d
 
     new = {}
-    for k, v in d.iteritems():
+    for k, v in list(d.items()):
         new_v = v
         if isinstance(v, dict):
             new_v = convert_key(v, converter)
@@ -141,7 +140,7 @@ def convert_value(d, converter):
         return converter(d)
 
     new = {}
-    for k, v in d.iteritems():
+    for k, v in list(d.items()):
         new_v = v
         if isinstance(v, dict):
             new_v = convert_value(v, converter)
@@ -168,7 +167,7 @@ def clear_cookies(response):
     """
     Set all cookies to empty and expired.
     """
-    for cookie_name in flask.request.cookies.keys():
+    for cookie_name in list(flask.request.cookies.keys()):
         response.set_cookie(cookie_name, "", expires=0)
 
 
@@ -192,7 +191,7 @@ def append_query_params(original_url, **kwargs):
     scheme, netloc, path, query_string, fragment = urlsplit(original_url)
     query_params = parse_qs(query_string)
     if kwargs is not None:
-        for key, value in kwargs.iteritems():
+        for key, value in list(kwargs.items()):
             query_params[key] = [value]
 
     new_query_string = urlencode(query_params, doseq=True)

@@ -92,7 +92,7 @@ def encoded_jwt(kid, rsa_private_key):
     headers = {"kid": kid}
     return jwt.encode(
         utils.default_claims(), key=rsa_private_key, headers=headers, algorithm="RS256"
-    )
+    ).decode("utf-8")
 
 
 @pytest.fixture(scope="session")
@@ -113,7 +113,7 @@ def encoded_jwt_expired(kid, rsa_private_key):
     claims_expired["iat"] -= 10000
     return jwt.encode(
         claims_expired, key=rsa_private_key, headers=headers, algorithm="RS256"
-    )
+    ).decode("utf-8")
 
 
 @pytest.fixture(scope="session")
@@ -132,7 +132,7 @@ def encoded_jwt_refresh_token(claims_refresh, kid, rsa_private_key):
     headers = {"kid": kid}
     return jwt.encode(
         claims_refresh, key=rsa_private_key, headers=headers, algorithm="RS256"
-    )
+    ).decode("utf-8")
 
 
 class Mocker(object):
@@ -735,8 +735,8 @@ def oauth_client(app, db_session, oauth_user):
     """
     url = "https://oauth-test-client.net"
     client_id = "test-client"
-    client_secret = fence.utils.random_str(50)
-    hashed_secret = bcrypt.hashpw(client_secret, bcrypt.gensalt())
+    client_secret = fence.utils.random_str(50).encode("utf-8")
+    hashed_secret = bcrypt.hashpw(client_secret, bcrypt.gensalt()).decode("utf-8")
     test_user = db_session.query(models.User).filter_by(id=oauth_user.user_id).first()
     db_session.add(
         models.Client(
@@ -763,8 +763,8 @@ def oauth_client_B(app, request, db_session):
     """
     url = "https://oauth-test-client-B.net"
     client_id = "test-client-B"
-    client_secret = fence.utils.random_str(50)
-    hashed_secret = bcrypt.hashpw(client_secret, bcrypt.gensalt())
+    client_secret = fence.utils.random_str(50).encode("utf-8")
+    hashed_secret = bcrypt.hashpw(client_secret, bcrypt.gensalt()).decode("utf-8")
 
     test_user = db_session.query(models.User).filter_by(username="test").first()
     if not test_user:
@@ -971,7 +971,7 @@ def encoded_creds_jwt(
             key=rsa_private_key,
             headers=headers,
             algorithm="RS256",
-        ),
+        ).decode("utf-8"),
         user_id=user_client["user_id"],
         client_id=oauth_client["client_id"],
         proxy_group_id=google_proxy_group["id"],
@@ -1003,7 +1003,7 @@ def encoded_jwt_no_proxy_group(kid, rsa_private_key, user_client, oauth_client):
             key=rsa_private_key,
             headers=headers,
             algorithm="RS256",
-        ),
+        ).decode("utf-8"),
         user_id=user_client["user_id"],
         client_id=oauth_client["client_id"],
     )

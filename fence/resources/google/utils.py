@@ -138,7 +138,7 @@ def create_primary_service_account_key(user_id, username, proxy_group_id, expire
 
     key_id = sa_private_key.get("private_key_id")
 
-    fernet_key = Fernet(str(config["ENCRYPTION_KEY"]))
+    fernet_key = Fernet(bytes(config["ENCRYPTION_KEY"]))
     private_key_bytes = json.dumps(sa_private_key).encode("utf-8")
     private_key = fernet_key.encrypt(private_key_bytes)
 

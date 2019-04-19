@@ -17,9 +17,7 @@ def test_cdis_get_access_token(client, oauth_client, encoded_creds_jwt):
     path = "/credentials/cdis/access_token"
     data = {"api_key": api_key}
     response = client.post(
-        path,
-        data=data,
-        headers={"Authorization": "Bearer " + str(encoded_credentials_jwt)},
+        path, data=data, headers={"Authorization": "Bearer " + encoded_credentials_jwt}
     )
     assert "access_token" in response.json
 
@@ -34,8 +32,6 @@ def test_cdis_get_access_token_with_formdata(client, oauth_client, encoded_creds
     path = "/credentials/cdis/access_token"
     data = {"api_key": api_key}
     response = client.post(
-        path,
-        data=data,
-        headers={"Authorization": "Bearer " + str(encoded_credentials_jwt)},
+        path, data=data, headers={"Authorization": "Bearer " + encoded_credentials_jwt}
     )
     assert "access_token" in response.json

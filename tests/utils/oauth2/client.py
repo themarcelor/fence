@@ -1,5 +1,5 @@
-import urllib
-from urlparse import parse_qs, urlparse
+import urllib.request, urllib.parse, urllib.error
+from urllib.parse import parse_qs, urlparse
 
 import fence.utils
 
@@ -128,7 +128,7 @@ class OAuth2TestClient(object):
         self.client_id = oauth_client.client_id
         self.url = oauth_client.url
         if confidential:
-            self.client_secret = oauth_client.client_secret
+            self.client_secret = oauth_client.client_secret.decode("utf-8")
             self._auth_header = tests.utils.oauth2.create_basic_header(
                 self.client_id, self.client_secret
             )
@@ -155,7 +155,7 @@ class OAuth2TestClient(object):
         """
         path = self.PATH_AUTHORIZE
         if params:
-            path += "?" + urllib.urlencode(query=params)
+            path += "?" + urllib.parse.urlencode(query=params)
         return path
 
     def authorize(self, method="POST", data=None, do_asserts=True, include_auth=True):
@@ -239,6 +239,7 @@ class OAuth2TestClient(object):
         if self.client_secret and include_auth:
             data["client_secret"] = self.client_secret
         headers = self._auth_header if include_auth else {}
+
         response = self._client.post(self.PATH_TOKEN, headers=headers, data=data)
         self.token_response = TokenResponse(response)
         if do_asserts:

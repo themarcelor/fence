@@ -15,7 +15,7 @@ def get_api_key(client, encoded_credentials_jwt, scope=None):
     path = "/credentials/cdis/"
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": "Bearer " + str(encoded_credentials_jwt),
+        "Authorization": "Bearer " + encoded_credentials_jwt,
     }
     scope = scope or DEFAULT_SCOPE
     response = client.post(path, data={"scope": scope}, headers=headers)
@@ -33,7 +33,7 @@ def get_api_key_with_json(client, encoded_credentials_jwt, scope=None):
     scope = scope or DEFAULT_SCOPE
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + str(encoded_credentials_jwt),
+        "Authorization": "Bearer " + encoded_credentials_jwt,
     }
     response = client.post(
         "/credentials/cdis/", headers=headers, data=json.dumps({"scope": scope})

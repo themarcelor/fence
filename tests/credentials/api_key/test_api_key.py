@@ -29,7 +29,7 @@ def test_cdis_list_api_key(client, oauth_client, encoded_creds_jwt):
         get_api_key(client, encoded_credentials_jwt)
     response = client.get(
         "/credentials/cdis/",
-        headers={"Authorization": "Bearer " + str(encoded_credentials_jwt)},
+        headers={"Authorization": "Bearer " + encoded_credentials_jwt},
     )
     assert "jtis" in response.json
     assert len(response.json["jtis"]) == n_keys

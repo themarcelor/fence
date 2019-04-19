@@ -34,7 +34,9 @@ def encoded_admin_jwt(kid, rsa_private_key):
     claims["sub"] = "5678"
     claims["iss"] = config["BASE_URL"]
     claims["exp"] += 600
-    return jwt.encode(claims, key=rsa_private_key, headers=headers, algorithm="RS256")
+    return jwt.encode(
+        claims, key=rsa_private_key, headers=headers, algorithm="RS256"
+    ).decode("utf-8")
 
 
 # GET /users/<username> tests
@@ -284,12 +286,12 @@ def test_put_user_username_try_delete_username(
     client, admin_user, encoded_admin_jwt, db_session, test_user_a
 ):
     """ PUT /users/<username>: [update_user] try to delete username"""
-    """ 
+    """
     This probably shouldn't be allowed. Conveniently, the code flow ends up
-    the same as though the user had not tried to update 'name' at all, 
+    the same as though the user had not tried to update 'name' at all,
     since they pass in None. Right now, this just returns a 200 without
     updating anything or sending any message to the user. So the test has
-    been written to ensure this behavior, but maybe it should be noted that 
+    been written to ensure this behavior, but maybe it should be noted that
     the tail wagged the dog somewhat in this case...
     """
     r = client.put(
@@ -309,12 +311,12 @@ def test_put_user_username_try_delete_role(
     client, admin_user, encoded_admin_jwt, db_session, test_user_a
 ):
     """ PUT /users/<username>: [update_user] try to set role to None"""
-    """ 
+    """
     This probably shouldn't be allowed. Conveniently, the code flow ends up
-    the same as though the user had not tried to update 'role' at all, 
+    the same as though the user had not tried to update 'role' at all,
     since they pass in None. Right now, this just returns a 200 without
     updating anything or sending any message to the user. So the test has
-    been written to ensure this behavior, but maybe it should be noted that 
+    been written to ensure this behavior, but maybe it should be noted that
     the tail wagged the dog somewhat in this case...
     """
     user = db_session.query(User).filter_by(username="test_a").one()

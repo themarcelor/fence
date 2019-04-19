@@ -58,7 +58,7 @@ import pytest
 import time
 from datetime import datetime
 from io import StringIO
-from urllib import quote
+from urllib.parse import quote
 
 from fence.models import (
     Bucket,
@@ -75,7 +75,7 @@ from fence.config import config
 # Python 2 and 3 compatible
 try:
     from unittest.mock import MagicMock
-    from unittest.mock import patch
+    from unittest.mock import patch, mock_open
 except ImportError:
     from mock import MagicMock
     from mock import patch, mock_open
@@ -119,7 +119,9 @@ def test_google_service_account_monitor(
 
     mock_path = patch("fence.blueprints.google.os", path_mock)
     # mock_path = patch('os.path.exists', True)
-    mocked_open = patch("__builtin__.open", mock_open(read_data=creds_file))
+    import builtins
+
+    mocked_open = patch("builtins.open", mock_open(read_data=creds_file))
 
     monkeypatch.setitem(config, "CIRRUS_CFG", {"GOOGLE_APPLICATION_CREDENTIALS": "."})
 
@@ -1055,4 +1057,4 @@ def _assert_expected_error_response_structure(response, project_access):
 
 
 def _assert_expected_error_info_structure(data):
-    assert EXPECTED_ERROR_RESPONSE_KEYS.issubset(data.keys())
+    assert EXPECTED_ERROR_RESPONSE_KEYS.issubset(list(data.keys()))

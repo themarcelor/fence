@@ -52,7 +52,7 @@ class Oauth2ClientBase(object):
                 )
             )
             return None
-        return resp.json()["keys"]
+        return resp.json["keys"]
 
     def get_jwt_claims_identity(self, token_endpoint, jwks_endpoint, code):
         """

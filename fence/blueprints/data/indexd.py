@@ -668,7 +668,7 @@ class S3IndexedFileLocation(IndexedFileLocation):
             self.bucket_name(), aws_creds, expires_in
         )
 
-        multipart_upload.complete_multipart_upload(
+        return multipart_upload.complete_multipart_upload(
             self.parsed_url.netloc,
             self.parsed_url.path.strip("/"),
             credentials,

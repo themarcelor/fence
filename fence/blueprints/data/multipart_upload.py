@@ -72,7 +72,7 @@ def complete_multipart_upload(bucket, key, credentials, uploadId, parts):
     s3client = session.client("s3")
 
     try:
-        retry_call(
+        return retry_call(
             s3client.complete_multipart_upload,
             fkwargs={
                 "Bucket": bucket,

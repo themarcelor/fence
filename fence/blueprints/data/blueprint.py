@@ -8,7 +8,11 @@ from fence.blueprints.data.indexd import (
     IndexedFile,
     get_signed_url_for_file,
 )
-from fence.errors import Forbidden, InternalError, UserError
+from fence.errors import (
+    Forbidden,
+    InternalError,
+    UserError,
+)
 from fence.utils import is_valid_expiration
 from fence.rbac import check_arborist_auth
 
@@ -159,12 +163,11 @@ def complete_mutipart_upload():
         expires_in = min(params["expires_in"], expires_in)
 
     try:
-        BlankIndex.complete_multipart_upload(
+        return BlankIndex.complete_multipart_upload(
             params["key"], params["uploadId"], params["parts"], expires_in=expires_in
         ),
     except InternalError as e:
         return flask.jsonify({"message": e.message}, e.status_code)
-    return {}, 200
 
 
 @blueprint.route("/upload/<path:file_id>", methods=["GET"])

@@ -53,6 +53,6 @@ class OIDCServer(AuthorizationServer):
             self.save_token = save_token
         self.app = app
         self.generate_token = generate_token
-        self.init_jwt_config(app)
+        self.init_jwt_config(app.config)
         if getattr(self, "query_client"):
             self.authenticate_client = ClientAuthentication(query_client)

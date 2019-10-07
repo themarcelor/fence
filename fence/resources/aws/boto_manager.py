@@ -18,7 +18,7 @@ class BotoManager(object):
             RoleSessionName=role_session_name)
 
     def presigned_url(self, bucket, key, expires, config, method='get_object'):
-        if config.has_key('aws_access_key_id'):
+        if 'aws_access_key_id' in config:
             self.s3_client = client('s3', **config)
         if method not in ['get_object', 'put_object']:
             raise UserError('method {} not allowed'.format(method))
@@ -43,7 +43,7 @@ class BotoManager(object):
 
     def get_bucket_region(self, bucket, config):
         try:
-            if config.has_key('aws_access_key_id'):
+            if 'aws_access_key_id' in config:
                 self.s3_client = client('s3', **config)
             response = self.s3_client.get_bucket_location(Bucket=bucket)
             region = response.get('LocationConstraint')
@@ -83,7 +83,7 @@ class BotoManager(object):
         :return:
         '''
         try:
-            for group in groups.values():
+            for group in list(groups.values()):
                 self.iam.add_user_to_group(GroupName=group["GroupName"], UserName=username)
         except Exception as ex:
             self.logger.exception(ex)
@@ -132,7 +132,7 @@ class BotoManager(object):
         '''
         try:
             aws_kwargs = dict(Path=path, Description=description)
-            aws_kwargs = {k: v for k, v in aws_kwargs.items() if v is not None}
+            aws_kwargs = {k: v for k, v in list(aws_kwargs.items()) if v is not None}
             policy = self.iam.create_policy(
                 PolicyName=policy_name,
                 PolicyDocument=policy_document, **aws_kwargs

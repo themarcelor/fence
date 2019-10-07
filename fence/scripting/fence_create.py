@@ -45,18 +45,18 @@ logger = get_logger(__name__)
 def create_client_action(
         DB, username=None, client=None, urls=None, auto_approve=True):
     try:
-        print(create_client(
-            username, urls, DB, name=client, auto_approve=auto_approve))
+        print((create_client(
+            username, urls, DB, name=client, auto_approve=auto_approve)))
     except Exception as e:
-        print(e.message)
+        print((e.message))
 
 
 def delete_client_action(DB, client):
     try:
         drop_client(client, DB)
-        print('Client {} deleted'.format(client))
+        print(('Client {} deleted'.format(client)))
     except Exception as e:
-        print(e.message)
+        print((e.message))
 
 
 def sync_users(dbGaP, STORAGE_CREDENTIALS, DB,
@@ -129,7 +129,7 @@ def create_sample_data(DB, yaml_input):
 
 
 def create_group(s, data):
-    for group_name, fields in data['groups'].iteritems():
+    for group_name, fields in data['groups'].items():
         projects = fields.get('projects', [])
         group = s.query(Group).filter(Group.name == group_name).first()
         if not group:
@@ -171,10 +171,10 @@ def create_project(s, project_data):
                 )
                 sa = StorageAccess(provider=c_provider, project=project)
                 s.add(sa)
-                print(
+                print((
                     'created storage access for {} to {}'
                     .format(project.name, c_provider.name)
-                )
+                ))
             for bucket in buckets:
                 b = (
                     s.query(Bucket)
@@ -188,7 +188,7 @@ def create_project(s, project_data):
                     b = Bucket(name=bucket)
                     b.provider = c_provider
                     s.add(b)
-                    print('created bucket {} in db'.format(bucket))
+                    print(('created bucket {} in db'.format(bucket)))
 
     return project
 
@@ -233,19 +233,19 @@ def grant_project_to_group_or_user(s, project_data, group=None, user=None):
         else:
             raise Exception('need to provide either a user or group')
         s.add(ap)
-        print(
+        print((
             'created access privilege {} of project {} to {}'
             .format(privilege, project.name, name)
-        )
+        ))
     else:
         ap.privilege = privilege
-        print('updated access privilege {} of project {} to {}'
-              .format(privilege, project.name, name))
+        print(('updated access privilege {} of project {} to {}'
+              .format(privilege, project.name, name)))
 
 
 def create_cloud_providers(s, data):
     cloud_data = data.get('cloud_providers', [])
-    for name, fields, in cloud_data.iteritems():
+    for name, fields, in cloud_data.items():
         cloud_provider = s.query(CloudProvider).filter(
             CloudProvider.name == name
         ).first()
@@ -260,7 +260,7 @@ def create_cloud_providers(s, data):
 def create_users_with_group(DB, s, data):
     providers = {}
     data_groups = data['groups']
-    for username, data in data['users'].iteritems():
+    for username, data in data['users'].items():
         is_existing_user = True
         user = s.query(User).filter(func.lower(User.username) == username.lower()).first()
         admin = data.get('admin', False)
@@ -348,7 +348,7 @@ def remove_expired_google_service_account_keys(db):
         )
 
         current_time = int(time.time())
-        print('Current time: {}\n'.format(current_time))
+        print(('Current time: {}\n'.format(current_time)))
 
         expired_sa_keys_for_users = (
             current_session.query(GoogleServiceAccountKey)
@@ -379,21 +379,21 @@ def remove_expired_google_service_account_keys(db):
 
                 if not response_error_code:
                     current_session.delete(expired_user_key)
-                    print(
+                    print((
                         'INFO: Removed expired service account key {} '
                         'for service account {} (owned by user with id {}).\n'
                         .format(expired_user_key.key_id, sa.email, sa.user_id)
-                    )
+                    ))
                 elif response_error_code == 404:
-                    print(
+                    print((
                         'INFO: Service account key {} for service account {} '
                         '(owned by user with id {}) does not exist in Google. '
                         'Removing from database...\n'
                         .format(expired_user_key.key_id, sa.email, sa.user_id)
-                    )
+                    ))
                     current_session.delete(expired_user_key)
                 else:
-                    print(
+                    print((
                         'ERROR: Google returned an error when attempting to '
                         'remove service account key {} '
                         'for service account {} (owned by user with id {}). '
@@ -401,7 +401,7 @@ def remove_expired_google_service_account_keys(db):
                         .format(
                             expired_user_key.key_id, sa.email, sa.user_id,
                             response)
-                    )
+                    ))
 
 
 
@@ -409,7 +409,7 @@ def remove_expired_google_accounts_from_proxy_groups(db):
     db = SQLAlchemyDriver(db)
     with db.session as current_session:
         current_time = int(time.time())
-        print('Current time: {}'.format(current_time))
+        print(('Current time: {}'.format(current_time)))
 
         expired_accounts = (
             current_session.query(UserGoogleAccountToProxyGroup)
@@ -435,30 +435,30 @@ def remove_expired_google_accounts_from_proxy_groups(db):
 
                     if not response_error_code:
                         current_session.delete(expired_account_access)
-                        print(
+                        print((
                             'INFO: Removed {} from proxy group with id {}.\n'
                             .format(
                                 g_account.email,
                                 expired_account_access.proxy_group_id)
-                        )
+                        ))
                     else:
-                        print(
+                        print((
                             'ERROR: Google returned an error when attempting to '
                             'remove member {} from proxy group {}. Error:\n{}\n'
                             .format(
                                 g_account.email,
                                 expired_account_access.proxy_group_id,
                                 response)
-                        )
+                        ))
                 except Exception as exc:
-                    print(
+                    print((
                         'ERROR: Google returned an error when attempting to '
                         'remove member {} from proxy group {}. Error:\n{}\n'
                         .format(
                             g_account.email,
                             expired_account_access.proxy_group_id,
                             exc)
-                    )
+                    ))
 
 
 def delete_users(DB, usernames):
@@ -491,9 +491,9 @@ def get_jwt_keypair(kid, root_dir):
     private_filepath = None
     if kid is None:
         private_filepath = os.path.join(
-            root_dir, JWT_KEYPAIR_FILES.values()[0][1])
+            root_dir, list(JWT_KEYPAIR_FILES.values())[0][1])
     else:
-        for _kid, (_, private) in JWT_KEYPAIR_FILES.iteritems():
+        for _kid, (_, private) in JWT_KEYPAIR_FILES.items():
             if(kid != _kid):
                 continue
             private_filepath = os.path.join(root_dir, private)
@@ -510,7 +510,7 @@ def get_jwt_keypair(kid, root_dir):
     if kid:
         return kid, private_key
     else:
-        return JWT_KEYPAIR_FILES.keys()[0], private_key
+        return list(JWT_KEYPAIR_FILES.keys())[0], private_key
 
 
 def create_user_token(DB, BASE_URL, ROOT_DIR, kid, token_type, username, scopes, expires_in=3600):
@@ -527,7 +527,7 @@ def create_user_token(DB, BASE_URL, ROOT_DIR, kid, token_type, username, scopes,
             print('=============Option type is wrong!!!. Please select either access_token or refresh_token=============')
             return None
     except Exception as e:
-        print(e.message)
+        print((e.message))
         return None
 
 

@@ -77,7 +77,7 @@ def make_login_blueprint(app):
             }
         try:
             all_provider_info = [
-                provider_info(idp_id) for idp_id in idps.keys()
+                provider_info(idp_id) for idp_id in list(idps.keys())
             ]
             default_provider_info = provider_info(default_idp)
         except KeyError as e:

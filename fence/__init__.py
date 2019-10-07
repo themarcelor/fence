@@ -5,7 +5,7 @@ from authutils.oauth2.client import OAuthClient
 import flask
 from flask.ext.cors import CORS
 from flask_sqlalchemy_session import flask_scoped_session, current_session
-import urlparse
+import urllib.parse
 from userdatamodel.driver import SQLAlchemyDriver
 
 import cirrus
@@ -46,7 +46,7 @@ def app_config(app, settings='fence.settings', root_dir=None):
             base_url = 'https://' + base_url
         app.config['BASE_URL'] = base_url
     if 'ROOT_URL' not in app.config:
-        url = urlparse.urlparse(app.config['BASE_URL'])
+        url = urllib.parse.urlparse(app.config['BASE_URL'])
         app.config['ROOT_URL'] = '{}://{}'.format(url.scheme, url.netloc)
 
     app.keypairs = []
@@ -54,12 +54,12 @@ def app_config(app, settings='fence.settings', root_dir=None):
         root_dir = os.path.dirname(
                 os.path.dirname(os.path.realpath(__file__)))
     if 'AWS_CREDENTIALS' in app.config and len(app.config['AWS_CREDENTIALS']) > 0:
-        value = app.config['AWS_CREDENTIALS'].values()[0]
+        value = list(app.config['AWS_CREDENTIALS'].values())[0]
         app.boto = BotoManager(value, logger=app.logger)
         app.register_blueprint(
             fence.blueprints.data.blueprint, url_prefix='/data'
         )
-    for kid, (public, private) in app.config['JWT_KEYPAIR_FILES'].iteritems():
+    for kid, (public, private) in app.config['JWT_KEYPAIR_FILES'].items():
         public_filepath = os.path.join(root_dir, public)
         private_filepath = os.path.join(root_dir, private)
         with open(public_filepath, 'r') as f:
@@ -150,7 +150,7 @@ def app_sessions(app):
         logger=app.logger
     )
     enabled_idp_ids = (
-        app.config['ENABLED_IDENTITY_PROVIDERS']['providers'].keys()
+        list(app.config['ENABLED_IDENTITY_PROVIDERS']['providers'].keys())
     )
     # Add OIDC client for Google if configured.
     configured_google = (

@@ -1,6 +1,6 @@
 from . import utils
-import jwt
-import urlparse
+from . import jwt
+import urllib.parse
 import pytest
 
 
@@ -25,9 +25,9 @@ def test_indexd_download_file(
         algorithm='RS256',
     )}
     response = client.get(path, headers=headers, query_string=query_string)
-    print(response.json)
+    print((response.json))
     assert response.status_code == 200
-    assert 'url' in response.json.keys()
+    assert 'url' in list(response.json.keys())
 
 
 @pytest.mark.parametrize(
@@ -50,7 +50,7 @@ def test_indexd_upload_file(
     )}
     response = client.get(path, headers=headers)
     assert response.status_code == 200
-    assert 'url' in response.json.keys()
+    assert 'url' in list(response.json.keys())
 
 
 @pytest.mark.parametrize(
@@ -72,7 +72,7 @@ def test_indexd_download_file_no_protocol(
     )}
     response = client.get(path, headers=headers)
     assert response.status_code == 200
-    assert 'url' in response.json.keys()
+    assert 'url' in list(response.json.keys())
 
 
 def test_indexd_download_file_no_jwt(client, auth_client):
@@ -82,7 +82,7 @@ def test_indexd_download_file_no_jwt(client, auth_client):
     path = '/data/download/1'
     response = client.get(path)
     assert response.status_code == 401
-    assert 'url' not in response.json.keys()
+    assert 'url' not in list(response.json.keys())
 
 
 @pytest.mark.parametrize(
@@ -96,7 +96,7 @@ def test_indexd_unauthorized_download_file(
     path = '/data/download/1'
     response = client.get(path)
     assert response.status_code == 401
-    assert 'url' not in response.json.keys()
+    assert 'url' not in list(response.json.keys())
 
 
 @pytest.mark.parametrize(
@@ -119,7 +119,7 @@ def test_unauthorized_indexd_download_file(
     )}
     response = client.get(path, headers=headers)
     assert response.status_code == 401
-    assert 'url' not in response.json.keys()
+    assert 'url' not in list(response.json.keys())
 
 
 @pytest.mark.parametrize(
@@ -142,7 +142,7 @@ def test_unauthorized_indexd_upload_file(
     )}
     response = client.get(path, headers=headers)
     assert response.status_code == 401
-    assert 'url' not in response.json.keys()
+    assert 'url' not in list(response.json.keys())
 
 
 @pytest.mark.parametrize(
@@ -166,7 +166,7 @@ def test_unavailable_indexd_upload_file(
     )}
     response = client.get(path, headers=headers)
     assert response.status_code == 401
-    assert 'url' not in response.json.keys()
+    assert 'url' not in list(response.json.keys())
 
 
 @pytest.mark.parametrize(
@@ -180,9 +180,9 @@ def test_public_object_download_file(
     """
     path = '/data/download/1'
     response = client.get(path)
-    print(response.json)
+    print((response.json))
     assert response.status_code == 200
-    assert 'url' in response.json.keys()
+    assert 'url' in list(response.json.keys())
 
 
 @pytest.mark.parametrize(
@@ -197,8 +197,8 @@ def test_public_bucket_download_file(
     """
     path = '/data/download/1'
     response = client.get(path)
-    print(response.json)
+    print((response.json))
     assert response.status_code == 200
     url = response.json['url']
     # public url without signature
-    assert urlparse.urlparse(url).query == ''
+    assert urllib.parse.urlparse(url).query == ''

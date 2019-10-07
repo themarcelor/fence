@@ -129,6 +129,6 @@ def test_get_user_groups(db_session, awg_users):
         }
         
     ]
-    expected_groups.sort()
-    groups['groups'].sort()
-    assert groups['groups'] == expected_groups
+    exp_g = sorted(expected_groups, key=lambda i: i['name'])
+    res = sorted(groups['groups'], key=lambda i: i['name'])
+    assert res == exp_g

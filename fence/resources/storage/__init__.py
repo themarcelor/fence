@@ -43,7 +43,7 @@ class StorageManager(object):
     def __init__(self, credentials, logger):
         self.logger = logger
         self.clients = {}
-        for provider, config in credentials.iteritems():
+        for provider, config in credentials.items():
             if 'backend' not in config:
                 self.logger.error(
                     "Storage provider {} is not configured with backend"
@@ -61,10 +61,10 @@ class StorageManager(object):
         """
         storage_access = any([
             'read-storage' in item
-            for item in user.project_access.values()
+            for item in list(user.project_access.values())
         ])
         backend_access = any([
-           sa.provider.name == provider for p in user.projects.values()
+           sa.provider.name == provider for p in list(user.projects.values())
            for sa in p.storage_access
         ])
         if storage_access and backend_access:

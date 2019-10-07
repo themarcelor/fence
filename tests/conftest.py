@@ -19,7 +19,7 @@ from authutils.testing.fixtures import (
 )
 import bcrypt
 from cdisutilstest.code.storage_client_mock import get_client
-import jwt
+from . import jwt
 from mock import patch, MagicMock
 from moto import mock_s3, mock_sts
 import pytest
@@ -691,7 +691,7 @@ def oauth_client(app, db_session, oauth_user):
     """
     url = 'https://oauth-test-client.net'
     client_id = 'test-client'
-    client_secret = fence.utils.random_str(50)
+    client_secret = fence.utils.random_str(50).encode()
     hashed_secret = bcrypt.hashpw(client_secret, bcrypt.gensalt())
     test_user = (
         db_session

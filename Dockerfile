@@ -16,6 +16,7 @@ COPY ./deployment/uwsgi/wsgi.py /$appname/wsgi.py
 WORKDIR /$appname
 
 RUN python -m pip install --upgrade pip \
+    && pip install fastapi uvicorn \ 
     && python -m pip install --upgrade setuptools \
     && pip install -r requirements.txt
 

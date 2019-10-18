@@ -5,8 +5,8 @@ import uuid
 import flask
 import jwt
 from authlib.common.encoding import to_unicode
-from authlib.specs.oidc import CodeIDToken as AuthlibCodeIDToken
-from authlib.specs.oidc import IDTokenError
+from authlib.oidc.core import CodeIDToken as AuthlibCodeIDToken
+from cdiserrors import InvalidTokenError as IDTokenError
 
 from fence.jwt import keys
 

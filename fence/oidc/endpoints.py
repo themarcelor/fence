@@ -1,17 +1,14 @@
-import authlib.specs.rfc7009
-from authlib.specs.rfc7009.errors import (
-    InvalidClientError,
-    OAuth2Error,
-)
+from authlib.oauth2.rfc6749.errors import InvalidClientError, OAuth2Error
+import authlib.oauth2.rfc7009
 import bcrypt
 
 from fence.errors import BlacklistingError
 import fence.jwt.blacklist
 
 
-class RevocationEndpoint(authlib.specs.rfc7009.RevocationEndpoint):
+class RevocationEndpoint(authlib.oauth2.rfc7009.RevocationEndpoint):
     """
-    Inherit from ``authlib.specs.rfc7009.RevocationEndpoint`` to define how the
+    Inherit from ``RevocationEndpoint`` to define how the
     server should handle requests for token revocation.
     """
 

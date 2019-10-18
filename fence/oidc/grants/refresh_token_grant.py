@@ -1,15 +1,13 @@
 import bcrypt
 
-from authlib.specs.rfc6749.errors import (
+from authlib.oauth2.rfc6749.errors import (
     InvalidClientError,
     InvalidRequestError,
     InvalidScopeError,
     UnauthorizedClientError,
 )
-from authlib.specs.rfc6749.grants import (
-    RefreshTokenGrant as AuthlibRefreshTokenGrant
-)
-from authlib.specs.rfc6749.util import scope_to_list
+from authlib.oauth2.rfc6749.grants import RefreshTokenGrant as AuthlibRefreshTokenGrant
+from authlib.oauth2.rfc6749.util import scope_to_list
 
 from fence.jwt.blacklist import is_token_blacklisted
 from fence.jwt.errors import JWTError

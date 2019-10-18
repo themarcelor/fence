@@ -1,6 +1,6 @@
 import flask
 import flask_restful
-from authlib.specs.rfc6749.errors import OAuth2Error
+from authlib.oauth2.rfc6749.errors import OAuth2Error
 
 from fence.errors import APIError
 

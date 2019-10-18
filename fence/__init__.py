@@ -35,6 +35,19 @@ app = flask.Flask(__name__)
 CORS(app=app, headers=['content-type', 'accept'], expose_headers='*')
 
 
+def _set_authlib_cfgs(app):
+    # authlib OIDC settings
+    # key will need to be added
+    settings = {"OAUTH2_JWT_KEY": keys.default_private_key(app)}
+    app.config.update(settings)
+
+    # only add the following if not already provided
+    app.config.setdefault("OAUTH2_JWT_ENABLED", True)
+    app.config.setdefault("OAUTH2_JWT_ALG", "RS256")
+    app.config.setdefault("OAUTH2_JWT_ISS", app.config["BASE_URL"])
+    app.config.setdefault("OAUTH2_PROVIDER_ERROR_URI", "/api/oauth2/errors")
+
+
 def app_config(app, settings='fence.settings', root_dir=None):
     """
     Set up the config for the Flask app.
@@ -77,6 +90,7 @@ def app_config(app, settings='fence.settings', root_dir=None):
     }
 
     cirrus.config.config.update(**app.config.get('CIRRUS_CFG', {}))
+    _set_authlib_cfgs(app)
 
 
 def app_register_blueprints(app):

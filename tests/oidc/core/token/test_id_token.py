@@ -1,7 +1,7 @@
 import pytest
 import time
 
-from authlib.specs.oidc import IDTokenError
+from cdiserrors import InvalidTokenError as IDTokenError
 from fence.resources.storage.cdis_jwt import create_id_token
 
 from fence.jwt.token import generate_signed_id_token, UnsignedIDToken

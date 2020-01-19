@@ -783,12 +783,22 @@ class GoogleStorageIndexedFileLocation(IndexedFileLocation):
         username,
         r_pays_project=None,
     ):
+        logger.info(
+            "Generating presigned url from google storage with user {}. Expiration time: {}.".format(
+                username, str(expiration_time)
+            )
+        )
         proxy_group_id = get_or_create_proxy_group_id()
 
         private_key, key_db_entry = get_or_create_primary_service_account_key(
             user_id=user_id, username=username, proxy_group_id=proxy_group_id
         )
 
+        logger.info(
+            "Checking private key: {}".format(
+                private_key
+            )
+        )
         # Make sure the service account key expiration is later
         # than the expiration for the signed url. If it's not, we need to
         # provision a new service account key.
@@ -815,6 +825,25 @@ class GoogleStorageIndexedFileLocation(IndexedFileLocation):
         if config["BILLING_PROJECT_FOR_SIGNED_URLS"] and not r_pays_project:
             r_pays_project = config["BILLING_PROJECT_FOR_SIGNED_URLS"]
 
+        logger.info(
+            """
+            Assembling GS signed url:\n
+            resource_path: {}\n
+            http_verb: {}\n
+            expiration_time: {}\n
+            extension_headers: None\n
+            content_type: ''\n
+            md5_value: ''\n
+            service_account_creds: {}\n
+            requester_pays_user_project: {}
+            """.format(
+                resource_path,
+                http_verb,
+                str(expiration_time),
+                private_key,
+                r_pays_project
+            )
+        )
         final_url = cirrus.google_cloud.utils.get_signed_url(
             resource_path,
             http_verb,

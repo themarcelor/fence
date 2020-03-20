@@ -263,6 +263,12 @@ class IndexedFile(object):
 
     @cached_property
     def index_document(self):
+
+        rc = flask.current_app.index_redis_client
+        rc.set("foo", "bar")
+        a = rc.get("foo")
+        print(a)
+
         indexd_server = config.get("INDEXD") or config["BASE_URL"] + "/index"
         url = indexd_server + "/index/"
         try:

@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import os
+import redis
 
 from authutils.oauth2.client import OAuthClient
 import flask
@@ -241,6 +242,7 @@ def app_config(
     app.config.update(**config._configs)
 
     _setup_arborist_client(app)
+    _setup_index_redis_client(app)
     _setup_data_endpoint_and_boto(app)
     _load_keys(app, root_dir)
     _set_authlib_cfgs(app)
@@ -343,6 +345,10 @@ def _setup_oidc_clients(app):
 def _setup_arborist_client(app):
     if app.config.get("ARBORIST"):
         app.arborist = ArboristClient(arborist_base_url=config["ARBORIST"])
+
+
+def _setup_index_redis_client(app):
+    app.index_redis_client = redis.Redis(host="http://redis-service", port=6379, db=0)
 
 
 @app.errorhandler(Exception)

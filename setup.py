@@ -40,6 +40,7 @@ setup(
         "Werkzeug>=0.16.0,<1.0.0",
         "storageclient",
         "pyyaml~=5.1",
+        "redis~=3.4.1",
     ],
     scripts=["bin/fence-create"],
     package_data={"fence": ["static/privacy_policy.md"]},

@@ -7,6 +7,7 @@ import flask
 from flask_cors import CORS
 from flask_sqlalchemy_session import flask_scoped_session, current_session
 from userdatamodel.driver import SQLAlchemyDriver
+from urllib.parse import urlparse
 
 from fence.auth import logout, build_redirect_url
 from fence.blueprints.data.indexd import S3IndexedFileLocation
@@ -348,7 +349,17 @@ def _setup_arborist_client(app):
 
 
 def _setup_index_redis_client(app):
-    app.index_redis_client = redis.Redis(host="http://redis-service", port=6379, db=0)
+    """
+    Sets up the redis client based on config
+    """
+    redis_url_parts = urlparse(config["REDIS_HOST"])
+    ssl = redis_url_parts.scheme == "https"
+    app.index_redis_client = redis.Redis(
+        host=redis_url_parts.netloc,
+        port=config["REDIS_PORT"],
+        db=config["REDIS_DB"],
+        ssl=ssl,
+    )
 
 
 @app.errorhandler(Exception)

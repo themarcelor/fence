@@ -264,44 +264,49 @@ class IndexedFile(object):
     @cached_property
     def index_document(self):
 
-        rc = flask.current_app.index_redis_client
-        rc.set("foo", "bar")
-        a = rc.get("foo")
-        print(a)
+        logger.info("Checking Redis cache for GUID {}".format(self.file_id))
+        redis_client = flask.current_app.indexd_redis_client
+        record = redis_client.get(self.file_id)
+        logger.info("Found cached data: {}".foramt(record))
 
-        indexd_server = config.get("INDEXD") or config["BASE_URL"] + "/index"
-        url = indexd_server + "/index/"
-        try:
-            res = requests.get(url + self.file_id)
-        except Exception as e:
-            logger.error(
-                "failed to reach indexd at {0}: {1}".format(url + self.file_id, e)
-            )
-            raise UnavailableError("Fail to reach id service to find data location")
-        if res.status_code == 200:
+        if not record:  # Redis cache does not contain this record yet
+            url = "{}/index/".format(self.indexd_server)
             try:
-                json_response = res.json()
-                if "urls" not in json_response:
-                    logger.error(
-                        "URLs are not included in response from "
-                        "indexd: {}".format(url + self.file_id)
-                    )
-                    raise InternalError("URLs and metadata not found")
-                return res.json()
+                res = requests.get(url + self.file_id)
             except Exception as e:
                 logger.error(
-                    "indexd response missing JSON field {}".format(url + self.file_id)
+                    "failed to reach indexd at {0}: {1}".format(url + self.file_id, e)
                 )
-                raise InternalError("internal error from indexd: {}".format(e))
-        elif res.status_code == 404:
+                raise UnavailableError("Fail to reach id service to find data location")
+            if res.status_code == 200:
+                try:
+                    record = res.json()
+                except Exception as e:
+                    logger.error(
+                        "indexd response missing JSON field {}".format(
+                            url + self.file_id
+                        )
+                    )
+                    raise InternalError("internal error from indexd: {}".format(e))
+            elif res.status_code == 404:
+                logger.error(
+                    "Not Found. indexd could not find {}: {}".format(
+                        url + self.file_id, res.text
+                    )
+                )
+                raise NotFound(
+                    "No indexed document found with id {}".format(self.file_id)
+                )
+            else:
+                raise UnavailableError(res.text)
+
+        if "urls" not in record:
             logger.error(
-                "Not Found. indexd could not find {}: {}".format(
-                    url + self.file_id, res.text
-                )
+                "URLs are not included in response from "
+                "indexd: {}".format(url + self.file_id)
             )
-            raise NotFound("No indexed document found with id {}".format(self.file_id))
-        else:
-            raise UnavailableError(res.text)
+            raise InternalError("URLs and metadata not found")
+        return res.json()
 
     @cached_property
     def indexed_file_locations(self):

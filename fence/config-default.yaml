@@ -537,7 +537,7 @@ INDEXD_PASSWORD: ''
 # url where authz microservice is running
 ARBORIST: null
 
-REDIS_HOST: "http://redis-service"
+REDIS_HOST: "redis-service"
 REDIS_PORT: "6379"
 REDIS_DB: 0
 

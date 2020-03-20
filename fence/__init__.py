@@ -243,7 +243,7 @@ def app_config(
     app.config.update(**config._configs)
 
     _setup_arborist_client(app)
-    _setup_index_redis_client(app)
+    _setup_redis_clients(app)
     _setup_data_endpoint_and_boto(app)
     _load_keys(app, root_dir)
     _set_authlib_cfgs(app)
@@ -348,13 +348,13 @@ def _setup_arborist_client(app):
         app.arborist = ArboristClient(arborist_base_url=config["ARBORIST"])
 
 
-def _setup_index_redis_client(app):
+def _setup_redis_clients(app):
     """
     Sets up the redis client based on config
     """
     redis_url_parts = urlparse(config["REDIS_HOST"])
     ssl = redis_url_parts.scheme == "https"
-    app.index_redis_client = redis.Redis(
+    app.indexd_redis_client = redis.Redis(
         host=redis_url_parts.netloc,
         port=config["REDIS_PORT"],
         db=config["REDIS_DB"],

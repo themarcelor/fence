@@ -1,4 +1,7 @@
+import flask
+import json
 import re
+import requests
 import time
 from urllib.parse import urlparse
 
@@ -8,8 +11,6 @@ from cirrus import GoogleCloudManager
 from cdislogging import get_logger
 from cdispyutils.config import get_value
 from cdispyutils.hmac4 import generate_aws_presigned_url
-import flask
-import requests
 
 from fence.auth import (
     get_jwt,
@@ -267,9 +268,11 @@ class IndexedFile(object):
         logger.info("Checking Redis cache for GUID {}".format(self.file_id))
         redis_client = flask.current_app.indexd_redis_client
         record = redis_client.get(self.file_id)
-        logger.info("Found cached data: {}".foramt(record))
+        logger.info("Found cached data: {}".format(record))
 
-        if not record:  # Redis cache does not contain this record yet
+        if record:
+            record = json.loads(record)
+        else:  # Redis cache does not contain this record yet
             url = "{}/index/".format(self.indexd_server)
             try:
                 res = requests.get(url + self.file_id)
@@ -306,7 +309,7 @@ class IndexedFile(object):
                 "indexd: {}".format(url + self.file_id)
             )
             raise InternalError("URLs and metadata not found")
-        return res.json()
+        return record
 
     @cached_property
     def indexed_file_locations(self):

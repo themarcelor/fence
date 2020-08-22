@@ -104,10 +104,17 @@ def logout(next_url):
         provider_logout = config["ITRUST_GLOBAL_LOGOUT"] + safe_url
     elif provider == IdentityProvider.ras:
         RAS_LOGOUT="https://stsstg.nih.gov:443/connect/session/logout"
-        params = { "id_token": flask.g.id_token, "id_token_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", "logout_apps": "true" }
+        params = {
+            "id_token": flask.g.id_token,
+            "id_token_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "logout_apps": "true"
+            }
         ras_client_id = config["OPENID_CONNECT"]["ras"]["client_id"]
         ras_secret = config["OPENID_CONNECT"]["ras"]["client_secret"]
-        requests.post(RAS_LOGOUT, params=params, auth=(ras_client_id, ras_secret))
+        resp = requests.post(RAS_LOGOUT, params=params, auth=(ras_client_id, ras_secret))
+        logger.debug("logging out of ras")
+        logger.debug(resp.content)
+        logger.debug(resp.status_code)
     elif provider == IdentityProvider.fence:
         base = config["OPENID_CONNECT"]["fence"]["api_base_url"]
         safe_url = urllib.parse.quote_plus(next_url)

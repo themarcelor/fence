@@ -105,7 +105,7 @@ def logout(next_url):
     elif provider == IdentityProvider.ras:
         RAS_LOGOUT="https://stsstg.nih.gov:443/connect/session/logout"
         params = {
-            "id_token": flask.g.tokens.get("id_token")
+            "id_token": flask.g.tokens.get("id_token"),
             "id_token_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
             "logout_apps": "true"
             }

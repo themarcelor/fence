@@ -1,4 +1,5 @@
 import flask
+import requests
 from flask_sqlalchemy_session import current_session
 from functools import wraps
 import urllib.request, urllib.parse, urllib.error
@@ -101,6 +102,12 @@ def logout(next_url):
     if provider == IdentityProvider.itrust:
         safe_url = urllib.parse.quote_plus(next_url)
         provider_logout = config["ITRUST_GLOBAL_LOGOUT"] + safe_url
+    elif provider == IdentityProvider.ras:
+        RAS_LOGOUT="https://stsstg.nih.gov:443/connect/session/logout"
+        params = { "id_token": flask.g.id_token, "id_token_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", "logout_apps": "true" }
+        ras_client_id = config["OPENID_CONNECT"]["ras"]["client_id"]
+        ras_secret = config["OPENID_CONNECT"]["ras"]["client_secret"]
+        requests.post(RAS_LOGOUT, params=params, auth=(ras_client_id, ras_secret))
     elif provider == IdentityProvider.fence:
         base = config["OPENID_CONNECT"]["fence"]["api_base_url"]
         safe_url = urllib.parse.quote_plus(next_url)

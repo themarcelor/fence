@@ -102,7 +102,7 @@ def logout(next_url, ras_global_logout=False):
     if provider == IdentityProvider.itrust:
         safe_url = urllib.parse.quote_plus(next_url)
         provider_logout = config["ITRUST_GLOBAL_LOGOUT"] + safe_url
-    elif provider == IdentityProvider.RAS and ras_global_logout is True:
+    elif provider == IdentityProvider.ras and ras_global_logout is True:
         safe_url = urllib.parse.quote_plus(next_url)
         provider_logout = "https://stsstg.nih.gov/logout" + safe_url
     elif provider == IdentityProvider.fence:

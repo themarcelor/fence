@@ -83,7 +83,7 @@ def login_user(request, username, provider):
     flask.g.token = None
 
 
-def logout(next_url):
+def logout(next_url, ras_global_logout=False):
     """
     Return a redirect which another logout from IDP or the provided redirect.
 
@@ -92,6 +92,7 @@ def logout(next_url):
 
     Args:
         next_url (str): Final redirect desired after logout
+        ras_global_logout (bool): logs user out of RAS(SSO) if set to True, default is false
     """
     logger.debug("IN AUTH LOGOUT, next_url = {0}".format(next_url))
 
@@ -101,6 +102,9 @@ def logout(next_url):
     if provider == IdentityProvider.itrust:
         safe_url = urllib.parse.quote_plus(next_url)
         provider_logout = config["ITRUST_GLOBAL_LOGOUT"] + safe_url
+    elif provider == IdentityProvider.RAS and ras_global_logout is True:
+        safe_url = urllib.parse.quote_plus(next_url)
+        provider_logout = "https://stsstg.nih.gov/logout" + safe_url
     elif provider == IdentityProvider.fence:
         base = config["OPENID_CONNECT"]["fence"]["api_base_url"]
         provider_logout = base + "/logout?" + urllib.parse.urlencode({"next": next_url})

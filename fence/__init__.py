@@ -144,13 +144,24 @@ def app_register_blueprints(app):
     def logout_endpoint():
         root = config.get("BASE_URL", "")
         request_next = flask.request.args.get("next", root)
+        ras_global_logout = flask.request.args.get("ras_global_logout", root)
+
         if request_next.startswith("https") or request_next.startswith("http"):
             next_url = request_next
         else:
             next_url = build_redirect_url(config.get("ROOT_URL", ""), request_next)
         if domain(next_url) not in allowed_login_redirects():
             raise UserError("invalid logout redirect URL: {}".format(next_url))
-        return logout(next_url=next_url)
+        if not flask.g.access_token:
+            logger.warning ("Session token present but no access token found. Unable to check scopes in userinfo; returning.")
+        else:
+            at_scopes = jwt.decode(flask.g.access_token, verify=False).get("scope", "")
+            if "ras_global_logout" in at_scopes:
+                return logout(next_url=next_url, ras_global_logout=ras_global_logout)
+            else:
+                return logout(next_url=next_url, ras_global_logout=False)
+        return logout(next_url=next_url, ras_global_logout=False)
+
 
     @app.route("/jwt/keys")
     def public_keys():

@@ -199,6 +199,7 @@ CLIENT_ALLOWED_SCOPES:
   - "google_service_account"
   - "google_link"
   - "ga4gh_passport_v1"
+  - "ras_global_logout"
 
 # these are the scopes that CAN be included in a user's own access_token
 USER_ALLOWED_SCOPES:

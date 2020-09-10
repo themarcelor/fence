@@ -1,4 +1,11 @@
-from fence import app, app_config, app_register_blueprints, app_sessions, config
+from fence import (
+    app,
+    app_config,
+    app_register_blueprints,
+    app_sessions,
+    config,
+    app_init,
+)
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -28,6 +35,7 @@ if config.get("MOCK_STORAGE"):
     patcher = patch("fence.resources.storage.get_client", get_client)
     patcher.start()
 
-app_sessions(app)
-app_register_blueprints(app)
+# app_sessions(app)
+# app_register_blueprints(app)
+app_init(app)
 app.run(debug=True, port=8000)

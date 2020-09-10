@@ -51,6 +51,8 @@ def generate_token(client, grant_type, **kwargs):
         return generate_token_response(client, grant_type, **kwargs)
     elif grant_type == "implicit":
         return generate_implicit_response(client, grant_type, **kwargs)
+    elif grant_type == "client_credentials":
+        return generate_client_response(client, grant_type, **kwargs)
 
 
 def generate_implicit_response(
@@ -216,5 +218,41 @@ def generate_token_response(
         "id_token": id_token,
         "access_token": access_token,
         "refresh_token": refresh_token,
+        "expires_in": expires_in,
+    }
+
+
+class ClientUser:
+    id = ""
+    username = ""
+    is_admin = False
+    google_proxy_group_id = ""
+
+
+def generate_client_response(
+    client,
+    grant_type,
+    include_access_token=True,
+    expires_in=None,
+    user=None,
+    scope=None,
+    **kwargs
+):
+    # TODO: complete this PoC
+    keypair = flask.current_app.keypairs[0]
+    expires_in = config["ACCESS_TOKEN_EXPIRES_IN"] or expires_in
+    scope = scope or []
+    access_token = generate_signed_access_token(
+        kid=keypair.kid,
+        private_key=keypair.private_key,
+        user=ClientUser(),
+        expires_in=expires_in,
+        scopes=scope,
+        client_id=client.client_id,
+        include_project_access=False,
+    ).token
+    return {
+        "token_type": "Bearer",
+        "access_token": access_token,
         "expires_in": expires_in,
     }

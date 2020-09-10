@@ -222,13 +222,6 @@ def generate_token_response(
     }
 
 
-class ClientUser:
-    id = ""
-    username = ""
-    is_admin = False
-    google_proxy_group_id = ""
-
-
 def generate_client_response(
     client,
     grant_type,
@@ -242,10 +235,13 @@ def generate_client_response(
     keypair = flask.current_app.keypairs[0]
     expires_in = config["ACCESS_TOKEN_EXPIRES_IN"] or expires_in
     scope = scope or []
+    with flask.current_app.db.session as session:
+        session.add(client)
+        user = client.user
     access_token = generate_signed_access_token(
         kid=keypair.kid,
         private_key=keypair.private_key,
-        user=ClientUser(),
+        user=user,
         expires_in=expires_in,
         scopes=scope,
         client_id=client.client_id,

@@ -59,7 +59,7 @@ def add_visa_manually(db_session, user, rsa_private_key, kid):
 
 def add_refresh_token(db_session, user):
     refresh_token = "abcde1234567kposjdas"
-    expires = int(time.time()) + 1000
+    expires = int(time.time()) + 100000
 
     db_session.add(
         UpstreamRefreshToken(

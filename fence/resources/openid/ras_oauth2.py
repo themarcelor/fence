@@ -1,9 +1,10 @@
-import flask
-import requests
-import jwt
 import backoff
+import flask
 from flask_sqlalchemy_session import current_session
+import jwt
 from jose import jwt as jose_jwt
+import requests
+import time
 
 from fence.models import GA4GHVisaV1
 from fence.utils import DEFAULT_BACKOFF_SETTINGS
@@ -110,41 +111,67 @@ class RASOauth2Client(Oauth2ClientBase):
         - delete user's visas from db if we're not able to get a new access_token
         - delete user's visas from db if we're not able to get a new visa
         """
-        user.ga4gh_visas_v1 = []
         current_session.commit()
+        current_time = time.time()
 
-        try:
-            token_endpoint = self.get_value_from_discovery_doc("token_endpoint", "")
-            userinfo_endpoint = self.get_value_from_discovery_doc(
-                "userinfo_endpoint", ""
-            )
-            token = self.get_access_token(user, token_endpoint)
-            userinfo = self.get_userinfo(token, userinfo_endpoint)
-            encoded_visas = userinfo.get("ga4gh_passport_v1", [])
-        except Exception as e:
-            err_msg = "Could not retrieve visa"
-            self.logger.exception("{}: {}".format(err_msg, e))
-            raise
-
-        for encoded_visa in encoded_visas:
+        if user.upstream_refresh_tokens[0].expires > current_time:
             try:
-                # TODO: These visas must be validated!!!
-                decoded_visa = jwt.decode(encoded_visa, verify=False)
-                visa = GA4GHVisaV1(
-                    user=user,
-                    source=decoded_visa["ga4gh_visa_v1"]["source"],
-                    type=decoded_visa["ga4gh_visa_v1"]["type"],
-                    asserted=int(decoded_visa["ga4gh_visa_v1"]["asserted"]),
-                    expires=int(decoded_visa["exp"]),
-                    ga4gh_visa=encoded_visa,
+                token_endpoint = self.get_value_from_discovery_doc("token_endpoint", "")
+                userinfo_endpoint = self.get_value_from_discovery_doc(
+                    "userinfo_endpoint", ""
                 )
-
-                current_db_session = current_session.object_session(visa)
-
-                current_db_session.add(visa)
+                token = self.get_access_token(user, token_endpoint)
+                userinfo = self.get_userinfo(token, userinfo_endpoint)
+                encoded_visas = userinfo.get("ga4gh_passport_v1", [])
             except Exception as e:
-                err_msg = (
-                    f"Could not process visa '{encoded_visa}' - skipping this visa"
-                )
-                self.logger.exception("{}: {}".format(err_msg, e), exc_info=True)
-            current_session.commit()
+                err_msg = "Could not retrieve visa"
+                self.logger.exception("{}: {}".format(err_msg, e))
+                raise
+            
+            #if we didnt get new token and new userinfo then keep the old visa as long as they havent expired
+            if not encoded_visas:
+                for visa in user.ga4gh_visas_v1:
+                    if visa.expires < current_time:
+                        print(visa.expires)
+                        # remove this current visa
+            # update all visas if the refresh token was valid and got new token and userinfo
+            else:
+                user.ga4gh_visas_v1 = []
+                for encoded_visa in encoded_visas:
+                    try:
+                        # TODO: These visas must be validated!!!
+                        decoded_visa = jwt.decode(encoded_visa, verify=False)
+                        visa = GA4GHVisaV1(
+                            user=user,
+                            source=decoded_visa["ga4gh_visa_v1"]["source"],
+                            type=decoded_visa["ga4gh_visa_v1"]["type"],
+                            asserted=int(decoded_visa["ga4gh_visa_v1"]["asserted"]),
+                            expires=int(decoded_visa["exp"]),
+                            ga4gh_visa=encoded_visa,
+                        )
+
+                        current_db_session = current_session.object_session(visa)
+
+                        current_db_session.add(visa)
+                    except Exception as e:
+                        err_msg = (
+                            f"Could not process visa '{encoded_visa}' - skipping this visa"
+                        )
+                        self.logger.exception("{}: {}".format(err_msg, e), exc_info=True)
+                    current_session.commit()
+        else:
+            self.logger.exception("Removing expired refresh token for user {}".format("user.username"))
+        # if visa not expired then do nothing 
+
+        # if visa expired then remove visa
+
+    # def remove_token(self, user):
+    #     """
+    #     Remove token from table
+    #     """
+    
+    # def remove_visas(self, user):
+    #     """
+    #     Remove visas from table
+
+    #     """

@@ -59,16 +59,20 @@ pre_signed_url_req = Counter(
     ["username", "guid", "requested_protocol"],
 )
 
-import random, uuid
-protocols = ["s3", "gs", "http"]
-users = [f"user_{i}" for i in range(100)]
-guids = [f"dg.pauline/{uuid.uuid4()}" for _ in range(1000)]
-for _ in range(10000):
-    pre_signed_url_req.labels(
-        random.choice(users),
-        random.choice(guids),
-        random.choice(protocols),
-    ).inc()
+# import random, uuid
+# protocols = ["s3", "gs", "http"]
+# users = [f"user_{i}" for i in range(100)]
+# guids = [f"dg.pauline/{uuid.uuid4()}" for _ in range(1000)]
+# for _ in range(10000):
+#     pre_signed_url_req.labels(
+#         random.choice(users),
+#         random.choice(guids),
+#         random.choice(protocols),
+#     ).inc()
+pre_signed_url_req.labels("pauline", "file_1", "s3").inc()
+pre_signed_url_req.labels("pauline", "file_1", "s3").inc()
+pre_signed_url_req.labels("pauline", "file_2", "s3").inc()
+pre_signed_url_req.labels("marcelo", "file_1", "s3").inc()
 
 
 def get_signed_url_for_file(action, file_id, file_name=None):

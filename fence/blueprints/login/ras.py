@@ -9,6 +9,7 @@ from fence.blueprints.login.base import DefaultOAuth2Login, DefaultOAuth2Callbac
 
 from fence.config import config
 from fence.scripting.fence_create import init_syncer
+from gen3authz.client.arborist.client import ArboristClient
 
 
 class RASLogin(DefaultOAuth2Login):
@@ -87,10 +88,16 @@ class RASCallback(DefaultOAuth2Callback):
             dbGaP = os.environ.get("dbGaP") or config.get("dbGaP")
             if not isinstance(dbGaP, list):
                 dbGaP = [dbGaP]
-
+            arborist = None
+            if arborist:
+                arborist = ArboristClient(
+                    arborist_base_url=arborist,
+                    authz_provider="user-sync",
+                )
             sync = init_syncer(
                 dbGaP,
                 None,
                 DB,
+                arborist=arborist,
             )
             sync.sync_single_user_visas(user, current_session)

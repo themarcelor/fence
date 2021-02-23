@@ -577,7 +577,14 @@ class UserSyncer(object):
         return user_projects, user_info
 
     def _add_dbgap_project_for_user(
-        self, dbgap_project, privileges, username, sess, user_projects, dbgap_config
+        self,
+        dbgap_project,
+        privileges,
+        username,
+        sess,
+        user_projects,
+        dbgap_config,
+        single_visa_sync,
     ):
         """
         Helper function for csv parsing that adds a given dbgap project to Fence/Arborist
@@ -591,7 +598,7 @@ class UserSyncer(object):
             project = self._get_or_create(sess, Project, auth_id=dbgap_project)
 
             # need to add dbgap project to arborist
-            if self.arborist_client:
+            if self.arborist_client and not single_visa_sync:
                 self._add_dbgap_study_to_arborist(dbgap_project, dbgap_config)
 
             if project.name is None:
@@ -1195,6 +1202,7 @@ class UserSyncer(object):
         study_common_exchange_areas,
         dbgap_config,
         sess,
+        single_visa_sync=False,
     ):
         for username in user_projects.keys():
             for project in user_projects[username].keys():
@@ -1234,6 +1242,7 @@ class UserSyncer(object):
                             sess,
                             user_projects,
                             dbgap_config,
+                            single_visa_sync,
                         )
 
                     dbgap_project += "." + consent_code
@@ -1576,7 +1585,9 @@ class UserSyncer(object):
 
         return True
 
-    def _update_authz_in_arborist(self, session, user_projects, user_yaml=None, single_visa_sync=False):
+    def _update_authz_in_arborist(
+        self, session, user_projects, user_yaml=None, single_visa_sync=False
+    ):
         """
         Assign users policies in arborist from the information in
         ``user_projects`` and optionally a ``user_yaml``.
@@ -2114,6 +2125,7 @@ class UserSyncer(object):
             study_common_exchange_areas,
             dbgap_config,
             sess,
+            True,
         )
 
         if self.parse_consent_code:

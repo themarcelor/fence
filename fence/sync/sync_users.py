@@ -584,7 +584,7 @@ class UserSyncer(object):
         sess,
         user_projects,
         dbgap_config,
-        single_visa_sync,
+        single_visa_sync=False,
     ):
         """
         Helper function for csv parsing that adds a given dbgap project to Fence/Arborist
@@ -2083,14 +2083,14 @@ class UserSyncer(object):
             "study_common_exchange_areas", {}
         )
 
-        try:
-            user_yaml = UserYAML.from_file(
-                self.sync_from_local_yaml_file, encrypted=False, logger=self.logger
-            )
-        except (EnvironmentError, AssertionError) as e:
-            self.logger.error(str(e))
-            self.logger.error("aborting early")
-            return
+        # try:
+        #     user_yaml = UserYAML.from_file(
+        #         self.sync_from_local_yaml_file, encrypted=False, logger=self.logger
+        #     )
+        # except (EnvironmentError, AssertionError) as e:
+        #     self.logger.error(str(e))
+        #     self.logger.error("aborting early")
+        #     return
 
         user_projects = dict()
         user_info = dict()
@@ -2130,7 +2130,7 @@ class UserSyncer(object):
 
         if self.parse_consent_code:
             self._grant_all_consents_to_c999_users(
-                user_projects, user_yaml.project_to_resource
+                user_projects, {}
             )
         # update fence db
         if user_projects:
@@ -2142,7 +2142,7 @@ class UserSyncer(object):
         # update arborist db (user access)
         if self.arborist_client:
             self.logger.info("Synchronizing arborist with authorization info...")
-            success = self._update_authz_in_arborist(sess, user_projects, user_yaml)
+            success = self._update_authz_in_arborist(sess, user_projects, single_visa_sync=True)
             if success:
                 self.logger.info(
                     "Finished synchronizing authorization info to arborist"

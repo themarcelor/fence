@@ -88,12 +88,7 @@ class RASCallback(DefaultOAuth2Callback):
             dbGaP = os.environ.get("dbGaP") or config.get("dbGaP")
             if not isinstance(dbGaP, list):
                 dbGaP = [dbGaP]
-            arborist = None
-            if arborist:
-                arborist = ArboristClient(
-                    arborist_base_url=arborist,
-                    authz_provider="user-sync",
-                )
+            arborist = flask.current_app.arborist
             sync = init_syncer(
                 dbGaP,
                 None,

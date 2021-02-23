@@ -1166,7 +1166,7 @@ class UserSyncer(object):
         return {key.lower(): value for key, value in user_projects.items()}
 
     def _process_dbgap_project(
-        self, dbgap_project, privileges, username, sess, user_projects, dbgap_config
+        self, dbgap_project, privileges, username, sess, user_projects, dbgap_config, single_visa_sync=False
     ):
         if dbgap_project not in self.project_mapping:
             self._add_dbgap_project_for_user(
@@ -1183,7 +1183,7 @@ class UserSyncer(object):
                 phsid_privileges = {element_dict["auth_id"]: set(privileges)}
 
                 # need to add dbgap project to arborist
-                if self.arborist_client:
+                if self.arborist_client and not single_visa_sync:
                     self._add_dbgap_study_to_arborist(
                         element_dict["auth_id"], dbgap_config
                     )
@@ -1254,6 +1254,7 @@ class UserSyncer(object):
                     sess,
                     user_projects,
                     dbgap_config,
+                    single_visa_sync,
                 )
 
     def sync(self):

@@ -2,6 +2,8 @@ import flask
 import jwt
 import os
 from flask_sqlalchemy_session import current_session
+import time
+import threading
 
 from fence.models import GA4GHVisaV1, IdentityProvider
 
@@ -76,6 +78,7 @@ class RASCallback(DefaultOAuth2Callback):
         # Check if user has any project_access from a previous session or from usersync
         # if not do an on-the-fly usersync for this user to give them instant access after logging in through RAS
         if not user.project_access:
+            start = time.time()
             # Close previous db sessions. Leaving it open causes a race condition where we're viewing user.project_access while trying to update it in usersync
             # not closing leads to partially updated records
             current_session.close()
@@ -95,4 +98,9 @@ class RASCallback(DefaultOAuth2Callback):
                 DB,
                 arborist=arborist,
             )
-            sync.sync_single_user_visas(user, current_session)
+            # sync.sync_single_user_visas(user, current_session)
+            thread = threading.Thread(target=sync.sync_single_user_visas, args=(user, current_session))
+            thread.daemon = True
+            thread.start()
+            print("====================================")
+            print(time.time()-start)
